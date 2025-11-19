@@ -24,6 +24,9 @@
 			background-color: #e8e1ff; /* purple */
 			text-align: center;
 		}
+		div.highlightleft {
+			background-color: #e8e1ff; /* purple */
+		}
 		div.quote {background-color: #fff0e1;} /* orange */
 		code {
 			background: rgba(142, 142, 145, 0.25) !important;
@@ -46,7 +49,7 @@
 date: NOV 2025 | author: thorin
 
 <!--contents-->
-<span>
+<div>
 	<h3>CONTENTS</h3>
 	<ul>
 		<li><a href="#part1">PART 1: TRACKING</a>
@@ -63,6 +66,7 @@ date: NOV 2025 | author: thorin
 				<li><a href="#work">How does a fingerprint work?</a></li>
 				<li><a href="#effective">How effective is fingerprinting?</a></li>
 				<li><a href="#entropy">What is entropy?</a></li>
+				<li><a href="#equivalency">What is equivalency?</a></li>
 				<li><a href="#want">What do fingerprinters want?</a></li>
 			</ul>
 		</li>
@@ -81,24 +85,27 @@ date: NOV 2025 | author: thorin
 			</ul>
 		</li>
 	</ul>
-</span>
+</div>
 
 <!--foreword-->
-<span>
+<div>
 	<hr class="dashed">
 	<h3>FOREWORD</h3>
-	<p>This article's use of the word <code>fingerprint</code> refers to <code>browser fingerprinting</code>, also known as <code>device fingerprinting</code>, unless explicitly stated, and focuses on <code>active</code> (also known as client-side or browser) JavaScript (<code>JS</code>) fingerprinting. A <code>metric</code> refers to a fingerprint property (such as preferred web-content language) or a collection of properties, and a <code>bucket</code> is a unique result in a metric or fingerprint. <code>Entropy</code> is the result of the spread of users across a bucket and depends on the metric value. And <code>RFP</code> (resistFingerprinting) is a gecko (Firefox) setting developed in conjunction with Mozilla for Tor Browser to "resist" fingerprinting.</p>
-</span>
+	<p>This article's use of the word <code>fingerprint</code> refers to <code>browser fingerprinting</code>, also known as <code>device fingerprinting</code>, unless explicitly stated, and focuses on <code>active</code> (also known as client-side or browser) JavaScript (<code>JS</code>) fingerprinting.
+	<!--
+	A <code>metric</code> refers to a fingerprint property (such as preferred web-content language) or a collection of properties, and a <code>bucket</code> is a unique result in a metric or fingerprint. <code>Entropy</code> is the result of the spread of users across a bucket and depends on the metric value. And <code>RFP</code> (resistFingerprinting) is a gecko (Firefox) setting developed in conjunction with Mozilla for Tor Browser to "resist" fingerprinting.-->
+	</p>
+</div>
 
 <!--part1-->
-<span>
+<div>
 	<hr>
 	<h3><a name="part1"></a>PART 1: TRACKING</h3>
 	<p>Before we talk about fingerprinting, we need to know what its purpose is, and how that constitutes a threat. Some of those purposes are to help detect bots and prevent fraud. Another is to facilitate <code>web tracking</code>. It is this later purpose that this article is mostly interested in, although the others come into play with fingerprint resistance techniques.</p>
-</span>
+</div>
 
 <!--web tracking-->
-<span>
+<div>
 	<h4><a name="web"></a>Web Tracking</h4>
 	<p>So what is <code>web tracking</code> and why is it a threat? Web tracking <sup><a href="https://en.wikipedia.org/wiki/Web_tracking" target="_blank">wikipedia</a></sup> is <i>&ldquo;the practice by which operators of websites and third parties collect, store and share information about visitors' activities on the World Wide Web</i>&rdquo;. This information can be analysed to build <code>profiles</code> based on a <code>UUID</code> (Universally Unique Identifier) <sup><a href="https://en.wikipedia.org/wiki/Universally_unique_identifier" target="_blank">wikipedia</a></sup>.</p>
 	<p>A profile could be based on a device, a browser, an IP address, to name a few, or any combination thereof. It's merely an end-point on which to assign the information and doesn't necessarily mean an individual, e.g. an IP address may be used by many people and/or on many devices, and a browser may be used by more than a single person.</p>
@@ -111,24 +118,24 @@ date: NOV 2025 | author: thorin
 	</div>
 	<p>There is also usually no way to correct or remove any of the information should it be erroneous, especially if no-one knows what it is or that it even exists. One example is no-flight lists. Another is gang databases. There are examples of this being frequently abused and erroneous, even leading to incarceration <sup><a href="https://www.techdirt.com/tag/gang-database/" target="_blank">techdirt</a></sup>.</p>
 	<p>Note that the lack of a profile can also be used to influence results: e.g. rewards, promotions, pricing algorithms. The world isn't perfect, sorry.</p>
-</span>
+</div>
 
 <!--state tracking-->
-<span>
+<div>
 	<hr class="dashed">
 	<h4><a name="state"></a>State Tracking</h4>
 	<p>There are other web tracking techniques such as navigational, correlation/timing, network fingerprinting, logging in including with a <code>SSO</code> (Single Sign-On) .. to name some more. In this section we will focus on <code>state tracking</code> to illustrate how tracking works.</p>
 	<p>So what is state tracking? It refers to anything client-side (your browser) that is created and persisted and used by websites. It can be stored in memory for the session, or written to disk. So <code>state</code> basically means something created client-side that the website can ask for and use. A typical example is a "cookie".</p>
 	<p>Server-assigned UUIDs are cheap to generate and guaranteed to be unique. And state tracking is/was a cheap, easy and reliable way for trackers to work. Whilst commercial surveillance will always take the lowest hanging fruit and cheapest options when they can, browser mitigations are becoming standard, old web standards updated for more privacy, and consumers more privacy conscious.</p>
-	<p>Let's look at a simplistic generalized example. <code>1st party</code> refers to the website you visit, such as supercutekittens.com. <code>3rd party</code> would be any other website that is connected to, e.g. providing content such as scripts, images, widgets, discussion boards, avatars, and adverts.</p>
+	<p>Let's look at a simplistic generalized example. <code>First party</code> refers to the website you visit, such as supercutekittens.com. <code>Third party</code> would be any other website that is connected to, e.g. providing content such as scripts, images, widgets, discussion boards, avatars, and adverts.</p>
 	<div class="inset example">
 		<h5>Example (state and IP address tracking)</h5>
 		<ul>
-			<li>You visit supercutekittens.com, which may check if you have a "cookie" with an assigned UUID, and if not it may give you one (first party). They will also log your IP address and may associate it with your UUID. Or you may have signed up and logged on.</li>
-			<li>Whilst on supercutekittens.com, your browser also connects to tracker.com (3rd party) which does the same (checks for or sets a "cookie", logs your IP address) and notes that you are at supercutekittens.com</li>
-			<li>Now you visit your local news site, a travel agency and a pregnancy help center: all of which also connect to tracker.com which asks for it's "cookie", gets the UUID it assigned you, and takes note of what sites you visit (sometimes even what specific web page) and when, along with your IP.</li>
-			<li>This is how a 3rd party tracker can accumulate information: it gave you a UUID and every site it has a presence on, it recognises you and adds more information to your profile. And if a "cookie" is due to expire, they can just replace it with a new one with what is known as a prolongation attack.</li>
-			<li>The 3rd party tracking is the danger here as it links your traffic. Whilst 1st party tracking can also be used to re-identify, this is not what we're focused on.</li>
+			<li>You visit supercutekittens.com, which checks if you have a "cookie" with an assigned UUID, and if not it gives you one (first party). They also log your IP address and the date and time and will associate these with your UUID.</li>
+			<li>Whilst on supercutekittens.com, your browser also connects to tracker.com (third party) which does the same (checks for or sets a "cookie", logs your IP address and the date and time) and notes that you are at supercutekittens.com</li>
+			<li>Now you visit your local news site, a travel agency and a pregnancy help center: all of which also connect to tracker.com which asks for it's "cookie", gets the UUID it assigned you, and takes note of what sites you visit (sometimes even what specific web page) and when, along with your IP and timestamps.</li>
+			<li>This is how a third party tracker can accumulate information: it gave you a UUID and every site it has a presence on, it recognises you and adds more information to your profile. And if a "cookie" is due to expire, they can just replace it with a new one with what is known as a prolongation attack.</li>
+			<li>The third party tracking is the danger here as it links your traffic. Whilst first party tracking can also be used to re-identify, this is not what we're focused on.</li>
 			<li>Now as you browse the web you might start seeing adverts for travel deals, new-born baby supplies <sup><a href="https://techland.time.com/2012/02/17/how-target-knew-a-high-school-girl-was-pregnant-before-her-parents/" target="_blank">Time Magazine</a></sup>, and of course ... super cute kittens 🐈.</li>
 		</ul>
 	</div>
@@ -146,27 +153,27 @@ date: NOV 2025 | author: thorin
 			<li>You were "re-identified even though you sanitized cookies and "site data".</li>
 		</ul>
 	</div>
-	<p>The "zombie cookie" refers to the re-identification being used to help re-create a cookie with your original UUID, and tracker.com will carry on accumulating data to your existing profile. And then there's a whole world of data brokers behind the scenes working feverishly to enlarge and link shadow profiles to profiles - not to mention 1st party sites selling data to said brokers.</p>
-</span>
+	<p>The "zombie cookie" refers to the re-identification being used to help re-create a cookie with your original UUID, and tracker.com will carry on accumulating data to your existing profile. And then there's a whole world of data brokers behind the scenes working feverishly to enlarge and link shadow profiles to profiles - not to mention first party sites selling data to said brokers.</p>
+</div>
 
 <!--IP-->
-<span>
-<br><hr class="dashed">
+<div>
+	<br><hr class="dashed">
 	<h4><a name="ip"></a>IP Addresses</h4>
 	<p>IP addresses can also be used to help link traffic. An IP addresses doesn't have to be exact, it can simply be collected and later rendered into something more stable, e.g. known tor exit node, VPN company X, proxy, or even ISP.</p>
 	<div class="inset highlight">Keep in mind, that whilst an IP address is part of fingerprinting, this article is focused on client-side or JavaScript fingerprinting.</div>
-</span>
+</div>
 
 <!--mitigations-->
-<span>
+<div>
 	<br><hr class="dashed">
 	<h4><a name="tracking"></a>Tracking Mitigations</h4>
 	<p>Over the years as users have become more privacy savvy, browsers and services have been increasingly working towards tracking solutions</p>
 	<ul>
 		<li><u>IP address</u>
 			<ul>
-				<li>VPNs [rui to add this sentence: e.g. can mix your traffic with hundreds and thousands of others]</li>
-				<li>tor [pier to add this sentence: e.g. random exit node per website per session or on new identity]</li>
+				<li>VPNs - traffic is mixed with hundreds and thousands of others and the user can change endpoints and even VPN providers (and per app)</li>
+				<li>tor - traffic is obscured by being assigned a random exit node per website per session and on new identity</li>
 			</ul>
 		</li>
 		<li><u>sanitizing</u> (clearing of "site data")
@@ -199,7 +206,7 @@ date: NOV 2025 | author: thorin
 		<li><u>other</u>
 			<ul>
 				<li>blocking known trackers</li>
-				<li>deprecating (or blocking) 3rd party "cookies"</li>
+				<li>deprecating (or blocking) third party "cookies"</li>
 				<li>Cookies Having Independent Partitioned State  <sup><a href="https://developer.mozilla.org/docs/Web/Privacy/Guides/Privacy_sandbox/Partitioned_cookies" target="_blank">MDN</a></sup></li>
 			</ul>
 		</li>
@@ -209,9 +216,9 @@ date: NOV 2025 | author: thorin
 		<h5>Example (third party and IP address tracking mitigations)</h5>
 		<ul>
 			<li>You're using a reputable VPN or Tor Browser.</li>
-			<li>In a normal window you visit supercutekittens.com, your local news site, a travel agency and a pregnancy help center (first party), where each site logs your IP address and may check for any existing "state" or set some to track you.</li>
+			<li>In a normal window you visit supercutekittens.com, your local news site, a travel agency and a pregnancy help center (first party), where each site logs your IP address and timestamps and checks for any existing "state" or sets some to track you.</li>
 			<li>You open a private or incognito window and visit supercutekittens.com again.</li>
-			<li>Each site also connects to tracker.com (which in this example wasn't blocked by the browser's tracker blocker). On each site tracker.com also logs your IP address and checks for any existing "state" or sets some.</li>
+			<li>Each site also connects to tracker.com (which in this example wasn't blocked by the browser's tracker blocker). On each site tracker.com also logs your IP address and timestamps and checks for any existing "state" or sets some.</li>
 			<li>All state is <code>double-keyed</code> to the requesting site's origin (our defined first party)
 				<ul>
 					<li>on all five sites (one site was in two different window modes), tracker.com's state was partitioned to that first party key, and it can only set and retrieve it's own state that matches that key: e.g. on supercutekittens.com it found nothing, generated a UUID and set a cookie for tracking and then on the news site, it found nothing, generated another UUID and set a cookie for tracking and so on</li>
@@ -223,28 +230,26 @@ date: NOV 2025 | author: thorin
 			<li>Now as you browse the web you probably won't start seeing adverts for travel deals, new-born baby supplies, and alas ... super cute kittens 🐈. If you do, that's <b>likely a coincidence</b>.</li>
 		</ul>
 	</div>
-	<p>So we won? 🎉 Unfortunately, no! And what replaces the effective death of 3rd party state tracking is even worse, because you have no control over it.</p>
-</span>
+	<p>So we won? 🎉 Unfortunately, no! And what replaces the effective death of third party state tracking is even worse, because you have no control over it.</p>
+</div>
 
 <!--part2-->
-<span>
-<hr>
-<h3><a name="part2"></a>PART 2: FINGERPRINTING</h3>
-
-	<p>In Part 1 we talked about mitigating <code>state tracking</code>, say hello to <code>stateless tracking</code>. Because it is stateless, sanitizing has no effect, partitioning has no effect, and to make matters worse, you have little to no control over it as a user.</p>
-
+<div>
+	<hr>
+	<h3><a name="part2"></a>PART 2: FINGERPRINTING</h3>
+	<p>In Part 1 we talked about mitigating <code>state tracking</code>. Say hello to <code>stateless tracking</code>. Because it is stateless, sanitizing has no effect, partitioning has no effect, and to make matters worse, you have little to no control over it as a user.</p>
 	<p>In order to resist fingerprinting, we need to know what it is, how it works, and how effective it can be. It also helps to know what fingerprinters want and how they work.</p>
 	<div class="inset quote">
 		&ldquo;<i>Know your enemy...</i>&rdquo; - Sun Tzu
 		<br><br>
 		&ldquo;<i>Think evil to defeat evil.</i>&rdquo; - thorin
 	</div>
-</span>
+</div>
 
 <!--what is a fp-->
-<span>
+<div>
 	<h4><a name="what"></a>What is a fingerprint?</h4>
-	<p>A fingerprint is a collection of metrics (properties and values) that the browser provides automatically, when asked for or after interaction. There are two types</p>
+	<p>A fingerprint is a collection of <code>metrics</code> (properties and values) that the browser provides automatically, when asked for or after interaction. There are two types</p>
 	<ul>
 		<li><code>passive</code> (server-side): traffic originates from the browser
 			<ul><li>e.g. HTTP Headers, SSL/TLS fingerprints, TCP/IP stack fingerprints, IP address, requests for assets</li></ul>
@@ -258,45 +263,34 @@ date: NOV 2025 | author: thorin
 	<div class="inset highlight">To keep things simple, this article is focused on <code>active</code> fingerprinting.</div>
 	<p>Have you heard of "Where's Wally?" <sup><a href="https://en.wikipedia.org/wiki/Where's_Wally%3F" target="_blank">wikipedia</a></sup>. Think about how you search for Wally. You scan the image for a distinctive red and white bobble hat. When you find one you then check his hair is brown, then if he's wearing glasses, a red and white stripped top, blue pants, has a walking cane and finally brown boots. As soon as you find one missing, you stop checking and you start over with the next red and white bobble hat wearer. Eventually you find Wally. This assumes that the correct combination of hat, hair, glasses, top, pants, cane and boots are enough to make Wally unique in this crowd.</p>
 	<p>But fingerprinters are not trying to find Wally, they're trying to find everyone. So unlike "Where's Wally" where you stop checking after a check fails, fingerprinters treat all users the same and check all the metrics. And they check as many metrics as they can or deem enough. A fingerprinting script will typically get 50 to 100 metrics (depending on how you count them) in 100-150ms.</p>
-</span>
+</div>
 
 <!--how it works-->
-<span>
+<div>
 	<hr class="dashed">
 	<h4><a name="work"></a>How does a fingerprint work?</h4>
 	<p>When JavaScript is enabled, your browser provides information, consistently and on demand. It doesn't need to be in any <code>state</code> (sanitizing won't work), and that's why you have little to no control over it.</p>
-	<p>The combined metrics (information) create fingerprints. There isn't a standard format for a fingerprint, and a fingerprint can change over time (e.g. the userAgent changes with an update or fonts change). A fingerprinter will want to store all the details for later data analysis, metric weighting and other tooling. A fingerprint can be a subset of the metrics, and metrics altered for linkability. A fingerprint is typically <code>hashed</code> <sup><a href="https://en.wikipedia.org/wiki/Hash_function" target="blank">wikipedia</a></sup> for comparison.</p>
+	<p>The combined metrics (<code>information</code>) create fingerprints. There isn't a standard format for a fingerprint, and a fingerprint can change over time (e.g. the userAgent changes with an update or fonts change). A fingerprinter will want to store all the details for later data analysis, metric weighting and other tooling. A fingerprint can be a subset of the metrics, and metrics altered for linkability. A fingerprint is typically <code>hashed</code> <sup><a href="https://en.wikipedia.org/wiki/Hash_function" target="blank">wikipedia</a></sup> for comparison.</p>
 	<p>In this example, if a metric's value were to change or we add or remove metrics, the hash would also change.</p>
 	<div class="inset example">
 		<h5>Example (some common metrics)</h5>
-			<span class="mono spaces">
-fingerprint = {
-  devicePixelRatio": 1,
-  languages: ["en-US", "en"],
-  maxTouchPoints: 10,
-  "prefers-color-scheme": "dark",
-  screen_height: 1440,
-  screen_width: 2560,
-  timeZoneName: "America/Phoenix",
-  userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0",
-}
-			</span>
+		<span class="mono spaces">fingerprint = {<br>  devicePixelRatio": 1,<br>  languages: ["en-US", "en"],<br>  maxTouchPoints: 10,<br>  "prefers-color-scheme": "dark",<br>  screen_height: 1440,<br>  screen_width: 2560,<br>  timeZoneName: "America/Phoenix",<br>  userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0)Gecko/20100101 Firefox/135.0",<br>}</span>
 	</div>
-	<p>If we only check <code>timeZoneName</code>, we would have somewhere around <b>450</b> possible values or buckets. Each bucket would most likely have many potential browser users - the number in each would vary. As we check more metrics, the higher the number of possible buckets, and buckets of users would start to splinter into smaller buckets. The aim of the fingerprinting game is to get everyone into their own bucket - i.e unique.</p>
-	<p>Let's look at desktop Tor Browser
-		<ul>
-			<li><b>3</b> userAgents (one each for Windows, Mac, Linux)</li>
-			<li><b>8</b> likely screen dimensions with letterboxing <sup><a href="https://support.torproject.org/glossary/letterboxing/" target="_blank">tor project</a></sup> and you don't resize the window
-				<ul><li>more like <b>18</b> possible but we'll ignore portrait and older/legacy monitor sizes</li></ul>
-			</li>
-			<li><b>41</b> languages</li>
-			<li><b>984</b> (3 x 8 x 41) potential buckets in Tor Browser _so far_ and we've only checked three metrics, and those are metrics we've added fingerprint resistance to!</li>
-		</ul>
-	</p>
+	<p>If we only check <code>timeZoneName</code>, we would have somewhere around <b>70</b> possible values or buckets. There are almost 600 valid timeZoneNames <sup><a href="https://www.iana.org/time-zones" target="_blank">IANA</a></sup>, but platforms typically limit choices to some form of <code>metaZones</code> <sup><a href="https://github.com/unicode-org/cldr/blob/main/common/supplemental/metaZones.xml" target"_blank">github</a></sup>). Each bucket would most likely have many potential browser users - the number in each would vary. As we combine more metrics, the higher the number of possible buckets as users would start to splinter into smaller buckets. The aim of the fingerprinting game is to get everyone into their own bucket - i.e unique.</p>
+	<p>Let's look at desktop Tor Browser</p>
+	<ul>
+		<li><b>3</b> userAgents (one each for Windows, Mac, Linux)</li>
+		<li><b>8</b> likely screen dimensions with letterboxing <sup><a href="https://support.torproject.org/glossary/letterboxing/" target="_blank">tor project</a></sup> and you don't resize the window
+			<ul><li>more like <b>18</b> possible but we'll ignore portrait and older/legacy monitor sizes</li></ul>
+		</li>
+		<li><b>41</b> languages</li>
+		<li><b>984</b> (3 x 8 x 41) potential buckets in Tor Browser <i>so far</i> and we've only checked three metrics, and those are metrics we've added fingerprint resistance to!</li>
+	</ul>
 	<p>Every additional metric that differentiates any browser users multiplies the potential buckets. Even a binary choice such as <code>prefers-color-scheme</code> (light or dark) doubles it.</p>
-	<!--
-	<div class="inset highlight"> There are almost 600 valid timeZoneNames <sup><a href="https://www.iana.org/time-zones" target="_blank">IANA</a></sup>, with over 400 supported in browsers. But platforms typically limit choices to 70 or so <code>megaZones</code> <sup><a href="https://github.com/unicode-org/cldr/blob/main/common/supplemental/metaZones.xml" target"_blank">github</a></sup>. On Windows 11 the option for "Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna" changes your timeZoneName to <code>Europe/Berlin</code>. Maybe this differs based on your locale, but I have not checked.</div>
-	-->
+
+	<div class="inset highlight">Keep in mind that not all metrics are <b>independent</b>. This <b>limited</b> and <b>conservative</b> example is to illustrate how rapidly users can differentiate.</div>
+	<br>
+
 	<div class="inset example">
 		<h5>Example (potential desktop buckets)</h5>
 		<p>Imagine desktop browsers without any fingerprint resistance: lets conservatively say</p>
@@ -318,10 +312,10 @@ fingerprint = {
 		<!-- let sum = 150 * 100 * 100 * 100 * 60 * 60 * 20 * 10 * 5 * 3 * 3 * 2 // 9720000000000000 -->
 	</div>
 	<p>Now not all potential buckets are possible and not all potential buckets will have users. And users are not uniformly spread. That's the point. Fingerprinting works by adding metrics that multiply potential buckets, until they have enough users hopefully unique to serve their purpose.</p>
-</span>
+</div>
 
 <!--effective-->
-<span>
+<div>
 	<hr class="dashed">
 	<h4><a name="effective"></a>How effective is fingerprinting?</h4>
 	<p>A study <sup><a href="https://www.ndss-symposium.org/ndss2017/ndss-2017-programme/cross-browser-fingerprinting-os-and-hardware-level-features/" target="_blank">NDSS</a></sup> done in 2016 showing shows a <b>99.24%</b> unique hit rate, and that is excluding IP addresses <sup><a href="https://educatedguesswork.org/posts/traffic-relaying/" target="_blank">article</a></sup>. If you do nothing, you're going to be uniquely identifiable given a good enough fingerprinting script. See the previous section for some conservative back-of-the-envelope math.</p>
@@ -330,60 +324,56 @@ fingerprint = {
 		<i>&ldquo;Be Afraid. Be Very Afraid.</i>&rdquo; - The Fly <sup><a href="https://en.wikipedia.org/wiki/The_Fly_(1986_film)" target="_blank">wikipedia</a></sup>
 	</div>
 
-	<p>Reasons for driving fingerprinting adoption include
-		<ul>
-			<li><b>less effective state tracking</b>
-				<ul>
-					<li>deprecation of old web standards</li>
-					<li>changes to web standards to make them more private</li>
-					<li>rejection of web standards e.g. <sup><a href="https://mozilla.github.io/standards-positions/" target="_blank">Mozilla Standards Positions</a></sup></li>
-					<li>the almost-end-of <sup><a href="https://w3ctag.github.io/web-without-3p-cookies/" target="_blank">w3c</a></sup> but-likely-never-end-of <sup><a href="https://privacysandbox.com/news/privacy-sandbox-next-steps/" target="_blank">privacysandbox</a></sup> 3rd party "cookies"</li>
-					<li>adoption of browser mitigations such as partitioning</li>
-					<li>stricter regulations on privacy like GDPR and CCPA</li>
-				</ul>
-			</li>
-			<li><b>more effective fingerprinting</b>
-				<ul>
-					<li>increased web standards and APIs</li>
-					<li>increased platform and device performance making more <code>PoCs</code> (Proof of Concepts) feasible</li>
-					<li>new PoCs and research</li>
-					<li>increased use and sophistication of data analysis and tooling: e.g. AI and heuristics</li>
-				</ul>
-			</li>
-			<li><b>increased use of bot/fraud detection</b>
-				<ul><li>e.g. Cloudflare <sup><a href="https://blog.cloudflare.com/cloudflare-fraud-detection/" target="_blank">2023: Announcing Cloudflare Fraud Detection</a></sup></li></ul>
-			</li>
-			<li><b>policy</b>
-				<ul><li>e.g. Google Policy Change <sup><a href="https://blog.lukaszolejnik.com/biggest-privacy-erosion-in-10-years-on-googles-policy-change-towards-fingerprinting/" target="_blank">Lukasz Olejnik</a></sup></li></ul>
-			</li>
-		</ul>
-	</p>
+	<p>Reasons for driving fingerprinting adoption include</p>
+	<ul>
+		<li><b>less effective state tracking</b>
+			<ul>
+				<li>deprecation of old web standards</li>
+				<li>changes to web standards to make them more private</li>
+				<li>rejection of web standards e.g. <sup><a href="https://mozilla.github.io/standards-positions/" target="_blank">Mozilla Standards Positions</a></sup></li>
+				<li>the almost-end-of <sup><a href="https://w3ctag.github.io/web-without-3p-cookies/" target="_blank">w3c</a></sup> but-likely-never-end-of <sup><a href="https://privacysandbox.com/news/privacy-sandbox-next-steps/" target="_blank">privacysandbox</a></sup> third party "cookies"</li>
+				<li>adoption of browser mitigations such as partitioning</li>
+				<li>stricter regulations on privacy like GDPR and CCPA</li>
+			</ul>
+		</li>
+		<li><b>more effective fingerprinting</b>
+			<ul>
+				<li>increased web standards and APIs</li>
+				<li>increased platform and device performance making more <code>PoCs</code> (Proof of Concepts) feasible</li>
+				<li>new PoCs and research</li>
+				<li>increased use and sophistication of data analysis and tooling: e.g. AI and heuristics</li>
+			</ul>
+		</li>
+		<li><b>increased use of bot/fraud detection</b>
+			<ul><li>e.g. Cloudflare <sup><a href="https://blog.cloudflare.com/cloudflare-fraud-detection/" target="_blank">2023: Announcing Cloudflare Fraud Detection</a></sup></li></ul>
+		</li>
+		<li><b>policy</b>
+			<ul><li>e.g. Google Policy Change <sup><a href="https://blog.lukaszolejnik.com/biggest-privacy-erosion-in-10-years-on-googles-policy-change-towards-fingerprinting/" target="_blank">Lukasz Olejnik</a></sup></li></ul>
+		</li>
+	</ul>
+
 	<p>Not only is fingerprinting a very effective and accurate threat, but it's a <b>growing</b> threat.</p>
 	<div class="inset example">
 		<h5>Stats (using Alexa top 100,000)</h5>
-		<p>
-			<ul>
-				<li>2013: Cookieless Monster <sup><a href="https://doi.org/10.1109/SP.2013.43" target="_blank">doi.org</a></sup>
-					<ul><li><b>0.4%</b> used one of three common scripts: BlueCava, Iovation, ThreatMetrix</li></ul>
-				</li>
-				<li>2014: The Web Never Forgets <sup><a href="https://doi.org/10.1145/2660267.2660347" target="_blank">doi.org</a></sup>
-					<ul><li><b>5.5%</b> (5542 sites) performing Canvas fingerprinting</li></ul>
-				</li>
-				<li>2021: Fingerprinting the Fingerprinters <sup><a href="https://doi.ieeecomputersociety.org/10.1109/SP40001.2021.00017" target="_blank">doi.org</a></sup>
-					<ul><li><b>10.18%</b> deployed by 2,349 diffferent domains</li><li><b>25%+</b> on the top 10,000</li></ul>
-				</li>
-				<li>2025: Beyond the Crawl <sup><a href="https://arxiv.org/abs/2502.01608" target="_blank">arxiv.org</a></sup>
-					<ul><li>automated crawls miss almost half (<b>45%</b>) of the fingerprinting websites encountered by real users (3,000 top sites)</li></ul>
-				</li>
-			</ul>
-		</p>
-		<h5>Follow the money</h5>
-		<p>
-			<ul>
-				<li>fingerprint.com's revenue grew <b>3,654%</b> in 2024 <sup><a href="https://fingerprint.com/blog/fastest-growing-company-2024-deloitte-technology-fast-500/" target="_blank">fingerprint.com</a></sup></li>
-				<li>the market is projected to grow at a compound annual growth rate of <b>25%</b> from 2024 to 2030, hitting USD 5.6 billion <sup><a href="https://www.verifiedmarketreports.com/product/browser-fingerprinting-protection-market/" target="_blank">verifiedmarketreports</a></sup></li>
+		<ul>
+			<li>2013: Cookieless Monster <sup><a href="https://doi.org/10.1109/SP.2013.43" target="_blank">doi.org</a></sup>
+				<ul><li><b>0.4%</b> used one of three common scripts: BlueCava, Iovation, ThreatMetrix</li></ul>
+			</li>
+			<li>2014: The Web Never Forgets <sup><a href="https://doi.org/10.1145/2660267.2660347" target="_blank">doi.org</a></sup>
+				<ul><li><b>5.5%</b> (5542 sites) performing Canvas fingerprinting</li></ul>
+			</li>
+			<li>2021: Fingerprinting the Fingerprinters <sup><a href="https://doi.ieeecomputersociety.org/10.1109/SP40001.2021.00017" target="_blank">doi.org</a></sup>
+				<ul><li><b>10.18%</b> deployed by 2,349 diffferent domains</li><li><b>25%+</b> on the top 10,000</li></ul>
+			</li>
+			<li>2025: Beyond the Crawl <sup><a href="https://arxiv.org/abs/2502.01608" target="_blank">arxiv.org</a></sup>
+				<ul><li>automated crawls miss almost half (<b>45%</b>) of the fingerprinting websites encountered by real users (3,000 top sites)</li></ul>
+			</li>
 		</ul>
-		</p>
+		<h5>Follow the money</h5>
+		<ul>
+			<li>fingerprint.com's revenue grew <b>3,654%</b> in 2024 <sup><a href="https://fingerprint.com/blog/fastest-growing-company-2024-deloitte-technology-fast-500/" target="_blank">fingerprint.com</a></sup></li>
+			<li>the market is projected to grow at a compound annual growth rate of <b>25%</b> from 2024 to 2030, hitting USD 5.6 billion <sup><a href="https://www.verifiedmarketreports.com/product/browser-fingerprinting-protection-market/" target="_blank">verifiedmarketreports</a></sup></li>
+		</ul>
 	</div>
 	<p>So how does this work in reality? Let's revisit our example.</p>
 	<div class="inset example">
@@ -398,26 +388,235 @@ fingerprint = {
 				<li>Now as you browse the web you might start seeing adverts for travel deals, new-born baby supplies, and of course ... super cute kittens 🐈.</li>
 			</ul>
 	</div>
-</span>
+</div>
 
 <!--entropy-->
-<span>
+<div>
 	<br><hr class="dashed">
 	<h4><a name="entropy"></a>What is entropy?</h4>
+	<p>When people or articles talk about fingerprinting, they talk about entropy. So what is it?</p>
+	<p>Ask 10 different people (mathematician, physicist, statistician, etc) what entropy is and you'll get 10 different answers. Basically, it is <b>information theory</b> <sup><a href="https://en.wikipedia.org/wiki/Entropy_(information_theory)" target="_blank">wikipedia</a></sup>. We don't really like to think of or use entropy as such - it can be useful, but is most effective analysing large scale real-world data sets, not measuring individual metrics (and most metrics are <b>not independent</b>). We prefer to think in buckets and uniformity. If a metric splits any users into more buckets, then it adds entropy.</p>
+	<div class="inset example">
+		<h5>Terms</h5>
+		<ul>
+			<li><b>probability</b>
+				<math display="block">
+					<msub><mi>p</mi><mi>x</mi></msub>&nbsp; &nbsp; or &nbsp; &nbsp; 
+					<mrow><mi>P</mi><mo form="prefix" stretchy="false">(</mo><mi>x</mi><mo form="postfix" stretchy="false">)</mo></mrow>
+				</math>
+				Likelihood of an event, which in our case is a user to have a certain metric value (x). It is always normalized between 0 and 1 and does not have any units.
+			</li>
+			<li><b>information</b>
+				<math display="block">
+					<mrow>
+						<mi>I</mi>
+						<mo form="prefix" stretchy="false">(</mo>
+						<mi>x</mi>
+						<mo form="postfix" stretchy="false">)</mo>
+						<mo>=</mo>
+						<mo form="prefix" stretchy="false">−</mo>
+						<mi>l</mi>
+						<mi>o</mi>
+						<msub>
+							<mi>g</mi>
+							<mn>2</mn>
+						</msub>
+						<mrow>
+							<mo fence="true" form="prefix">(</mo>
+							<mi>P</mi>
+							<mo form="prefix" stretchy="false">(</mo>
+							<mi>x</mi>
+							<mo form="postfix" stretchy="false">)</mo>
+							<mo fence="true" form="postfix">)</mo>
+						</mrow>
+						<mo>=</mo>
+						<mi>l</mi>
+						<mi>o</mi>
+						<msub>
+							<mi>g</mi>
+							<mn>2</mn>
+						</msub>
+						<mrow>
+							<mo fence="true" form="prefix">(</mo>
+							<mfrac>
+								<mn>1</mn>
+								<mrow>
+									<mi>P</mi>
+									<mo form="prefix" stretchy="false">(</mo>
+									<mi>x</mi>
+									<mo form="postfix" stretchy="false" lspace="0em" rspace="0em">)</mo>
+								</mrow>
+							</mfrac>
+							<mo fence="true" form="postfix">)</mo>
+						</mrow>
+					</mrow>
+				</math>
+				It tells how "surprising" it is to see <b>a certain</b> metric value (also known as a <b>surprisal</b>). The lower the probability, the higher will be its information. Theoretically, the logarithm could be any base (as long as it's higher than 1), but when you use base 2, the unit of the information is the bit.
+				</li>
+				<li><b>entropy</b>
+				<math display="block"">
+					<mrow>
+						<mi>H</mi>
+						<mo form="prefix" stretchy="false">(</mo>
+						<mi>X</mi>
+						<mo form="postfix" stretchy="false">)</mo>
+						<mo>=</mo>
+						<mi>𝔼</mi>
+						<mrow>
+							<mo fence="true" form="prefix">[</mo>
+							<mi>I</mi>
+							<mo fence="true" form="postfix">]</mo>
+						</mrow>
+						<mo>=</mo>
+						<mo form="prefix" stretchy="false">−</mo>
+						<mrow>
+							<munder>
+								<mo movablelimits="false">∑</mo>
+								<mrow>
+									<mi>x</mi>
+									<mo>∈</mo>
+									<mi class="mathcal">𝒳</mi>
+								</mrow>
+							</munder>
+						</mrow>
+						<mi>p</mi>
+						<mo form="prefix" stretchy="false">(</mo>
+						<mi>x</mi>
+						<mo form="postfix" stretchy="false">)</mo>
+						<mrow>
+							<mspace width="0.1667em"></mspace>
+							<mi>log</mi>
+							<mo>⁡</mo>
+							<mspace width="0.1667em"></mspace>
+						</mrow>
+						<mi>p</mi>
+						<mo form="prefix" stretchy="false">(</mo>
+						<mi>x</mi>
+						<mo form="postfix" stretchy="false">)</mo>
+					</mrow>
+				</math>
+				It's the expected value (basically, the mean) of the information. It gives <b>an overview</b> about whether a metric will give out a lot knowledge.
+				</li>
+		</ul>
+	</div>
+	<p>A fingerprinting script will get as much <code>information</code> as it thinks it needs, by testing metrics that add <code>entropy</code>. If a metric splits any users into smaller buckets, then it adds entropy. If it adds entropy, the distribution of users across the fingerprint affects each bucket differently, usually measured in <code>bits</code>. Enough bits (33 bits: 33<sup>2</sup> is 8.59 billion, which is more than the number the humans on the planet), and theoretically you are unique. This is not a perfect analogy: not everyone is online or using browsers, and we're not identifying people, we're identifying browser profiles (multiple devices, multiple browsers and profiles). But the point remains. Think of it as the less users in a bucket, the more they stand out because the bucket/crowd is smaller, so the higher the entropy and bits.</p>
 
-<p>When people or articles talk about fingerprinting, they talk about entropy. So what is it?<p>
+	<p>Here's my definition of entropy</p>
+	<div class="inset highlight">Entropy is the <b>average</b> uncertainty (using probabilities) represented in the least amount of <b>bits</b></div>
+	<p> Let's look at a simple example</p>
+	<div class="inset example">
+		<h5>Example (entropy)</h5>
+		<p>imagine a metric that every browser has that can only result in one of two values: <b>true</b> or <b>false</b>
+			<ul>
+				<li><u>100% true</u>
+					<ul><li>the entropy is zero (i.e everyone is the same)</li></ul>
+				</li>
+				<li><u>50% true and 50% false</u>
+					<ul>
+						<li>everyone would have the same probability of <code>0.5</code></li>
+						<li><code>1 in 2</code> = <code>1 bit</code> of information: (<code>−<i>log</i><sub>2</sub>(0.5)</code>)</li>
+						<li><b>entropy</b> is <code>0.5 x 1 + 0.5 x 1</code> = <code>1 bit</code></li>
+						<li>this is the <u>maximum entropy</u> case: random variable with <u>uniform</u> probability (e.g., the same as flipping a coin or rolling a dice)</li>
+					</ul>
+				</li>
+				<li><u>25% true and 75% false</u>
+					<ul>
+						<li>true: probability of <code>0.25</code>
+							<ul><li><code>1 in 4</code> = <code>2 bits</code> of information: (<code>−<i>log</i><sub>2</sub>(0.25)</code>)</li></ul>
+						</li>
+						<li>false: probability of <code>0.75</code>
+							<ul><li><code>3 in 4</code> = <code>0.42 bits</code> of information: (<code><i>-log</i><sub>2</sub>(0.75)</code>)</li></ul>
+						</li>
+						<li><b>entropy</b> is <code>0.25 x 2 + 0.75 x 0.42</code> = <code>0.815 bits</code>
+							<ul><ii>notice it is lower than the uniform case</li></ul>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</p>
+	</div>
+	<p>Fingerprinters want to add or raise entropy. Fingerprint resistance would then logically want to reduce or lower entropy - and it can absolutely do that by reducing buckets. Now compare the above two-bucket examples. The 50/50 uniform probability has an entropy of <code>1</code> which is higher than the 25/75 probability's <code>0.815</code>. But the higher entropy here actually offers the best protection. This is because smaller buckets are quickly (<i>log<sub>2</sub></i>) disadvantaged in what I like to call the <u>long thin tail</u> - the lower the probability, the higher the bits of information, so when we have smaller and smaller buckets, they rapidly gain higher bits of information. In other words <b>average entropy</b> isn't all that helpful. Ideally we want uniform or <b>maximum entropy</b>. Unfortunately, we can't always control <b>unformity</b>, but it is something we should strive for.</p>
+</div>
 
-<p>Ask 10 different people (mathematician, physicist, statistician, etc) what entropy is and you'll get 10 different answers. Basically, it is information theory. We don't really like to think of or use entropy as such - it can be useful, but is most effective analysing large scale real-world data sets, not measuring individual metrics. We prefer to think in buckets and uniformity. If a metric splits any users into more buckets, then it adds entropy.<p>
+<!--equivalency-->
+<div>
+	<hr class="dashed">
+	<h4><a name="equivalency"></a>What is equivalency?</h4>
 
-<p>A fingerprinting script will get as much <code>information</code> as it thinks it needs, by testing metrics that add <code>entropy</code> <sup><a href="https://en.wikipedia.org/wiki/Entropy_(information_theory)" target="_blank">wikipedia</a></sup>. If a metric splits any users into smaller buckets, then it adds entropy. If it adds entropy, the distribution of users across the metric affects each bucket differently, usually measured in <code>bits</code>. Enough bits (33 bits: 2 to the power of 33 is 8.59 billion, which is more than the number the humans on the planet), and theoretically you are unique. Think of it as the less users in a bucket, the more they stand out because the bucket/crowd is smaller, so the higher the entropy and bits.</p>
-
-</span>
+	<p>If a metric doesn't add any <b>new</b> information, it's equivalency.</p>
+	<div class="inset example">
+		<h5>Example (dependent metric)</h5>
+		<ul>
+			<li><b>dependency</b>: platform
+				<ul><li>already known from e.g. userAgent and/or feature detection</li></ul>
+			</li>
+			<li><b>new metric</b>: <code>-apple-system</code> font</li>
+			<li><b>new information</b>: none
+				<ul><li>It is 100% certain* (probability <code>1</code>) that if you are on an apple device you have the font, and if you are not you don't - therefore the entropy of having this font, or not having it, is zero
+				</li>
+				<li>* Assuming no-one is silly enough to alias <i>-apple-system</i> on a non-apple device</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+	<p>When resisting fingerprinting there are metrics that cannot be hidden, lied about or feasible<p>
+	<ul>
+		<li><u>hidden</u>: e.g.
+			<ul>
+				<li>the browser engine (gecko, blink, webkit, edgeHTML, trident etc)</li>
+				<li>browser version<ul><li>feature detection and changes that cannot be user controlled)</li></ul></li>
+				<li>platform (Windows, Mac, Linux or Android)</li>
+				<li>font enumeration <ul><li>a font either exists or is aliased to one that exists, or it doesn't exist or is blocked</li></ul></li>
+			</ul>
+		</li>
+		<li><u>lied about</u>: e.g.
+			<ul>
+				<li> Not to be confused with limiting values; i.e the web-content uses those values and this affects the user experience
+					<ul>
+						<li>web-content language preferences</li>
+						<li>locale</li>
+						<li>timeZoneName</li>
+						<li>inner window dimensions</li>
+					</ul>
+				</li>
+			</ul>
+		</li>
+		<li><u>feasible</u>: e.g.
+			<ul><li>metrics that are impractical or currently not feasible to do anything with</li></ul>
+		</li>
+	</ul>
+	<p>These "base" metrics are a known limitation. When a metric only reinforces that, i.e it doesn't add any new information it's equivalency, of something already known. Here's some more examples.</p>
+	<div class="inset example">
+		<h5>Example (timezoneOffset)</h5>
+		<ul>
+			<li>assume every browser provides a <code>timeZoneName</code> (usually from the platform) and a <code>timezoneOffset</code></li>
+			<li>the <code>timeZoneName</code> options may vary with platform</li>
+			<li>the <code>timezoneOffset</code> information (we can check a range of dates) is determined by the <code>timeZoneName</code> and may vary based on the browser and browser version: it's dependant on the implementation and the bundled <code>tzdata</code> <sup><a href="https://www.iana.org/time-zones" target="_blank">IANA</a></li>
+			<li>this makes a <code>timezoneOffset(s)</code> metric equivalency of already known information (<code>timeZoneName</code>, platform, browser and version)</li>
+		</ul>
+		<h5>Example (audio)</h5>
+		<ul>
+			<li><code>Math</code> has entropy caused by
+				<ul><li>floating point differences: the math library can differ between platforms and architecture</li></ul>
+			</li>
+			<li><code>offlineAudioContext</code> has entropy caused by
+				<ul>
+					<li>floating point differences in <code>Math</code></li>
+					<li>the <code>ac-sampleRate</code>: e.g. 44100 or 48000</li>
+				</ul>
+			</li>
+			<li>audio uses a subset of <code>Math</code> functions and a limited range</li>
+			<li>the floating point entropy in audio is therefore equivalancy, or a subset if you like, of <code>Math</code></li>
+		</ul>
+	</div>
+	<p>However, that's not to say including these metrics isn't useful. Additional entropy can be dependent on another metric value - e.g. checking touch on macs might be pointless, but not on other devices. Additionally, using multiple methods and equivalency can catch outliers and paradoxical edge cases, such as extensions messing with values, or users setting environment variables. But the effectiveness of these are a case of dimininishing returns vs performance.</p>
+</div>
 
 <!--want-->
-<span>
+<div>
 	<hr class="dashed">
 	<h4><a name="want"></a>What do fingerprinters want?</h4>
-</span>
+</div>
 
 <hr>
 <h3><a name="part3"></a>PART 3: FINGERPRINTING RESISTANCE</h3>
