@@ -2,6 +2,7 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=350">
 	<title>DRAFT: Browser Fingerprinting</title>
 	<!-- custom -->
 	<style>
@@ -66,6 +67,7 @@ date: NOV 2025 | author: thorin
 				<li><a href="#work">How does a fingerprint work?</a></li>
 				<li><a href="#effective">How effective is fingerprinting?</a></li>
 				<li><a href="#entropy">What is entropy?</a></li>
+				<li><a href="#surprisal">What is a surprisal?</a></li>
 				<li><a href="#equivalency">What is equivalency?</a></li>
 				<li><a href="#want">What do fingerprinters want?</a></li>
 			</ul>
@@ -73,8 +75,9 @@ date: NOV 2025 | author: thorin
 		<li><a href="#part3">PART 3: FINGERPRINTING RESISTANCE</a>
 			<ul>
 				<li><a href="#basics">Resistance Basics</a></li>
-				<li><a href="#methods">Resistance Methods</a></li>
 				<li><a href="#random">Randomizing vs Static Methods</a></li>
+				<li><a href="#methods">Resistance Methods</a></li>
+				<li><a href="#consider">Resistance Considerations</a></li>
 				<li><a href="#methodology">Tor Project Methodology</a></li>
 			</ul>
 		</li>
@@ -262,7 +265,7 @@ date: NOV 2025 | author: thorin
 	<p>While passive metrics also need to also be addressed, many are duplicitous and automatically reflect the active metric (e.g. <code>navigator.languages</code>, <code>navigator.userAgent</code> are also provided in HTTP Headers) or they are equivalency of values we cannot hide or lie about, or they hold no entropy.</p>
 	<div class="inset highlight">To keep things simple, this article is focused on <code>active</code> fingerprinting.</div>
 	<p>Have you heard of "Where's Wally?" <sup><a href="https://en.wikipedia.org/wiki/Where's_Wally%3F" target="_blank">wikipedia</a></sup>. Think about how you search for Wally. You scan the image for a distinctive red and white bobble hat. When you find one you then check his hair is brown, then if he's wearing glasses, a red and white stripped top, blue pants, has a walking cane and finally brown boots. As soon as you find one missing, you stop checking and you start over with the next red and white bobble hat wearer. Eventually you find Wally. This assumes that the correct combination of hat, hair, glasses, top, pants, cane and boots are enough to make Wally unique in this crowd.</p>
-	<p>But fingerprinters are not trying to find Wally, they're trying to find everyone. So unlike "Where's Wally" where you stop checking after a check fails, fingerprinters treat all users the same and check all the metrics. And they check as many metrics as they can or deem enough. A fingerprinting script will typically get 50 to 100 metrics (depending on how you count them) in 100-150ms.</p>
+	<p>But fingerprinters are not trying to find Wally, they're trying to find everyone. So unlike "Where's Wally" where you stop checking after a matching characteristic fails, fingerprinters treat all users the same and check all the metrics. And they check as many metrics as they can or deem enough. A fingerprinting script will typically get 50 to 100 metrics (depending on how you count them) in 100-150ms.</p>
 </div>
 
 <!--how it works-->
@@ -273,10 +276,10 @@ date: NOV 2025 | author: thorin
 	<p>The combined metrics (<code>information</code>) create fingerprints. There isn't a standard format for a fingerprint, and a fingerprint can change over time (e.g. the userAgent changes with an update or fonts change). A fingerprinter will want to store all the details for later data analysis, metric weighting and other tooling. A fingerprint can be a subset of the metrics, and metrics altered for linkability. A fingerprint is typically <code>hashed</code> <sup><a href="https://en.wikipedia.org/wiki/Hash_function" target="blank">wikipedia</a></sup> for comparison.</p>
 	<p>In this example, if a metric's value were to change or we add or remove metrics, the hash would also change.</p>
 	<div class="inset example">
-		<h5>Example (some common metrics)</h5>
+		<h5>Example (some common metrics)</h5><br>
 		<span class="mono spaces">fingerprint = {<br>  devicePixelRatio": 1,<br>  languages: ["en-US", "en"],<br>  maxTouchPoints: 10,<br>  "prefers-color-scheme": "dark",<br>  screen_height: 1440,<br>  screen_width: 2560,<br>  timeZoneName: "America/Phoenix",<br>  userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0)Gecko/20100101 Firefox/135.0",<br>}</span>
 	</div>
-	<p>If we only check <code>timeZoneName</code>, we would have somewhere around <b>70</b> possible values or buckets. There are almost 600 valid timeZoneNames <sup><a href="https://www.iana.org/time-zones" target="_blank">IANA</a></sup>, but platforms typically limit choices to some form of <code>metaZones</code> <sup><a href="https://github.com/unicode-org/cldr/blob/main/common/supplemental/metaZones.xml" target"_blank">github</a></sup>). Each bucket would most likely have many potential browser users - the number in each would vary. As we combine more metrics, the higher the number of possible buckets as users would start to splinter into smaller buckets. The aim of the fingerprinting game is to get everyone into their own bucket - i.e unique.</p>
+	<p>If we only check <code>timeZoneName</code>, we would have somewhere around 70 possible values or buckets. There are almost 600 valid timeZoneNames <sup><a href="https://www.iana.org/time-zones" target="_blank">IANA</a></sup>, but platforms typically limit choices to some form of <code>metaZones</code> <sup><a href="https://github.com/unicode-org/cldr/blob/main/common/supplemental/metaZones.xml" target"_blank">github</a></sup>). Each bucket would most likely have many potential browser users - the number in each would vary. As we combine more metrics, the higher the number of possible buckets as users would start to splinter into smaller buckets. The aim of the fingerprinting game is to get everyone into their own bucket - i.e unique.</p>
 	<p>Let's look at desktop Tor Browser</p>
 	<ul>
 		<li><b>3</b> userAgents (one each for Windows, Mac, Linux)</li>
@@ -395,7 +398,7 @@ date: NOV 2025 | author: thorin
 	<br><hr class="dashed">
 	<h4><a name="entropy"></a>What is entropy?</h4>
 	<p>When people or articles talk about fingerprinting, they talk about entropy. So what is it?</p>
-	<p>Ask 10 different people (mathematician, physicist, statistician, etc) what entropy is and you'll get 10 different answers. Basically, it is <b>information theory</b> <sup><a href="https://en.wikipedia.org/wiki/Entropy_(information_theory)" target="_blank">wikipedia</a></sup>. We don't really like to think of or use entropy as such - it can be useful, but is most effective analysing large scale real-world data sets, not measuring individual metrics (and most metrics are <b>not independent</b>). We prefer to think in buckets and uniformity. If a metric splits any users into more buckets, then it adds entropy.</p>
+	<p>Ask 10 different people (mathematician, physicist, statistician, etc) what entropy is and you'll get 10 different answers. Basically, it is <b>information theory</b> <sup><a href="https://en.wikipedia.org/wiki/Entropy_(information_theory)" target="_blank">wikipedia</a></sup>. We don't really like to think of or use entropy as such - it can be useful, but is most effective analysing large scale real-world data sets, not measuring individual metrics since most metrics are <b>not independent</b>. We prefer to think in buckets and uniformity. If a metric splits any users into more buckets, then it adds entropy.</p>
 	<div class="inset example">
 		<h5>Terms</h5>
 		<ul>
@@ -451,10 +454,10 @@ date: NOV 2025 | author: thorin
 						</mrow>
 					</mrow>
 				</math>
-				It tells how "surprising" it is to see <b>a certain</b> metric value (also known as a <b>surprisal</b>). The lower the probability, the higher will be its information. Theoretically, the logarithm could be any base (as long as it's higher than 1), but when you use base 2, the unit of the information is the bit.
+				It tells how "surprising" it is to see <b>a certain</b> metric value. The lower the probability, the higher will be its information. Theoretically, the logarithm could be any base (as long as it's higher than 1), but when you use base 2, the unit of the information is the bit.
 				</li>
 				<li><b>entropy</b>
-				<math display="block"">
+				<math display="block">
 					<mrow>
 						<mi>H</mi>
 						<mo form="prefix" stretchy="false">(</mo>
@@ -532,18 +535,59 @@ date: NOV 2025 | author: thorin
 						</li>
 					</ul>
 				</li>
+
+				<li><u>5% true and 95% false</u>
+					<ul>
+						<li>true: probability of <code>0.05</code>
+							<ul><li><code>1 in 20</code> = <code>4.322 bits</code> of information: (<code>−<i>log</i><sub>2</sub>(0.05)</code>)</li></ul>
+						</li>
+						<li>false: probability of <code>0.95</code>
+							<ul><li><code>19 in 20</code> = <code>0.074 bits</code> of information: (<code><i>-log</i><sub>2</sub>(0.95)</code>)</li></ul>
+						</li>
+						<li><b>entropy</b> is <code>0.05 x 4.322 + 0.95 x 0.074</code> = <code>0.2826 bits</code>
+						</li>
+					</ul>
+				</li>
+
 			</ul>
 		</p>
 	</div>
-	<p>Fingerprinters want to add or raise entropy. Fingerprint resistance would then logically want to reduce or lower entropy - and it can absolutely do that by reducing buckets. Now compare the above two-bucket examples. The 50/50 uniform probability has an entropy of <code>1</code> which is higher than the 25/75 probability's <code>0.815</code>. But the higher entropy here actually offers the best protection. This is because smaller buckets are quickly (<i>log<sub>2</sub></i>) disadvantaged in what I like to call the <u>long thin tail</u> - the lower the probability, the higher the bits of information, so when we have smaller and smaller buckets, they rapidly gain higher bits of information. In other words <b>average entropy</b> isn't all that helpful. Ideally we want uniform or <b>maximum entropy</b>. Unfortunately, we can't always control <b>unformity</b>, but it is something we should strive for.</p>
+	<p>Fingerprinters want to add or raise entropy. Fingerprint resistance would then logically want to reduce or lower entropy - and it can absolutely do that by reducing buckets. Now compare the above two-bucket examples. The 50/50 uniform probability has an entropy of <code>1</code> which is higher than the 25/75 probability's <code>0.815</code>. But the higher entropy here actually offers the best protection.</p>
+	<div class="inset highlight">The <i>lowest</i> entropy isn't always the <i>best</i> entropy.</div>
+	<p>This is because smaller buckets are quickly (<i>log<sub>2</sub></i>) disadvantaged in what I like to call the <u>long thin tail</u> - the lower the probability, the higher the bits of information, so when we have smaller and smaller buckets, they rapidly gain higher bits of information. Take the above two-bucket example with a 5/95 probability split. Those in the 95% bucket have great protection with only <code>0.074</code> bits of information, but the 5% bucket is in bad shape at <code>4.322</code>. So whilst the 5/95 average entropy of <code>0.2826</code> looks great, again a maximum entropy of <code>1</code> would be better.</p>
+
+	<p>In other words <b>average entropy</b> isn't all that helpful. Ideally we want uniform or <b>maximum entropy</b>. Unfortunately, we can't always control <b>unformity</b>, but it is something we should strive for.</p>
+</div>
+
+<!--surpisal-->
+<div>
+	<hr class="dashed">
+	<h4><a name="surprisal"></a>What is a surprisal?</h4>
+	<p>Our earlier definition of <code>information</code> started with <i>&ldquo;It tells how "surprising" it is to see a certain metric value.&rdquo;</i>. And not all metrics are independent.</p>
+	<p>When a metric adds information, there is also a calculation that reduces entropy by a certain amount. This is called <code>self-information</code> <sup><a href="https://en.wikipedia.org/wiki/Information_content" target="_blank">wikipedia</a></sup> or a <code>surprisal</code>, because it is a measure of how "surprising" or unexpected the new information is.</p>
+	<p> For example, if your timeZoneName is <code>America/Los_Angeles</code> and your language is <code>en-US</code>, that would be a higher probability and less surprising then returning <code>fr-FR</code> (French). Also see <code>mutual information</code> <sup><a href="https://en.wikipedia.org/wiki/Mutual_information" target="_blank">wikipedia</a></sup>: the mutal dependence between two random variables.</p>
+	<div class="inset example">
+		<h5>Example (self-information / surprisal)</h5>
+		<ul>
+			<li><u>random variable</u>: JavaScript is disabled</li>
+			<li><u>event</u>: all information normally gained via JavaScript is now replaced with a single piece of information: the random variable, i.e "JavaScript is disabled"</li>
+			<li><u>probability of the event</u>: 100%</li>
+			<li>this is not surprising to say the least, in fact it's 100% expected</li>
+		</ul>
+	</div>
+	<p>In the case of disabling JavaScript, so much information and entropy is avoided (vs allowing JavaScript) that little remains to differentiate users - i.e the potential buckets of users shrinks to a very few and therefore it takes less users to create a crowd.</p>
+	<div class="inset quote">
+		<h5><i>Pattern Recognition and Machine Learning</i> by C. Bishop (2006)</h5>
+		<p>&ldquo;The amount of information can be viewed as the ‘degree of surprise’ on learning the value of x. If we are told that a highly improbable event has just occurred, we will have received more information than if we were told that some very likely event has just occurred, and if we knew that the event was certain to happen we would receive no information.&rdquo;</p>
+	</div>
+	<p>In other words, when JavaScript is disabled, a thousand JavaScript metrics are <i>certain</i> to be equivalency of "JavaScript is disabled", so no further entropy is gained beyond the fact that JavaScript is disabled. In our preferred language example, <code>America/Los_Angeles</code> timeZoneName users having an <code>en-US</code> language locale is <i>likely</i> but not certain.</p>
 </div>
 
 <!--equivalency-->
 <div>
 	<hr class="dashed">
 	<h4><a name="equivalency"></a>What is equivalency?</h4>
-
-	<p>If a metric doesn't add any <b>new</b> information, it's equivalency.</p>
+	<p>If a metric doesn't add any <b>new</b> information, it's equivalency. Or in terms of surprisal, it's 100% unsurprising.</p>
 	<div class="inset example">
 		<h5>Example (dependent metric)</h5>
 		<ul>
@@ -559,7 +603,7 @@ date: NOV 2025 | author: thorin
 			</li>
 		</ul>
 	</div>
-	<p>When resisting fingerprinting there are metrics that cannot be hidden, lied about or feasible<p>
+	<p>When resisting fingerprinting there are metrics that cannot be hidden, lied about or feasible</p>
 	<ul>
 		<li><u>hidden</u>: e.g.
 			<ul>
@@ -585,13 +629,13 @@ date: NOV 2025 | author: thorin
 			<ul><li>metrics that are impractical or currently not feasible to do anything with</li></ul>
 		</li>
 	</ul>
-	<p>These "base" metrics are a known limitation. When a metric only reinforces that, i.e it doesn't add any new information it's equivalency, of something already known. Here's some more examples.</p>
+	<p>These "base" metrics are a known limitation. When a metric only reinforces that, i.e it doesn't add any new information, then it's equivalency of something already known. Here are some more examples.</p>
 	<div class="inset example">
 		<h5>Example (timezoneOffset)</h5>
 		<ul>
 			<li>assume every browser provides a <code>timeZoneName</code> (usually from the platform) and a <code>timezoneOffset</code></li>
 			<li>the <code>timeZoneName</code> options may vary with platform</li>
-			<li>the <code>timezoneOffset</code> information (we can check a range of dates) is determined by the <code>timeZoneName</code> and may vary based on the browser and browser version: it's dependant on the implementation and the bundled <code>tzdata</code> <sup><a href="https://www.iana.org/time-zones" target="_blank">IANA</a></li>
+			<li>the <code>timezoneOffset</code> information (we can check a range of dates) is determined by the <code>timeZoneName</code> and may vary based on the browser and browser version: it's dependent on the implementation and the bundled <code>tzdata</code> <sup><a href="https://www.iana.org/time-zones" target="_blank">IANA</a></sup></li>
 			<li>this makes a <code>timezoneOffset(s)</code> metric equivalency of already known information (<code>timeZoneName</code>, platform, browser and version)</li>
 		</ul>
 		<h5>Example (audio)</h5>
@@ -616,19 +660,418 @@ date: NOV 2025 | author: thorin
 <div>
 	<hr class="dashed">
 	<h4><a name="want"></a>What do fingerprinters want?</h4>
+	<div class="inset highlight"><b>Part 2: Intro</b>: In order to resist fingerprinting... [it] helps to know what fingerprinters want and how they work.</div>
+	<p>Fingerprinting scripts require websites to host or allow them, so what websites want here is important. Websites want fingerprinting scripts to be:</p>
+	<ul>
+		<li><u>Seemless</u>
+			<ul>
+				<li>no unexpected events alarming users
+					<ul><li>e.g. DRM or other permission prompts especially when they don't make sense given the website's purpose, blank new windows or tabs opening, unexpected high CPU cycles, or unhandled errors leading to site breakage</li></ul>
+				</li>
+			</ul>
+		</li>
+		<li><u>Performant</u>
+			<ul>
+				<li>fast and not affect the website's performance
+					<ul><li>e.g. the script can be fetched/run after other events</li></ul>
+				</li>
+			</ul>
+		</li>
+		<li><u>Unblockable</u>
+			<ul>
+				<li>hard or impossible to bypass
+					<ul>
+						<li>e.g. use random script names, run as first party, embed the code inside core functionality or other scripts.</li>
+						<li>This can seem counterintuitive to being seemless (no breakage), but there is a balance to be had between protecting the investment and purpose (anti-fraud, bot-dectection, etc) versus "leaving money on the table". If the percentage of affected users (that break the site trying to circumvent the script) is small, it can be justified.</li>
+					</ul>
+				</li>
+			</ul>
+		</li>
+	</ul>
+	<p>Fingerprinters also want to attract websites to spread their reach and effectiveness, so they also want their scripts to achieve certain attributes in order to sell themselves. Fingerprinting scripts want their metrics to be:</p>
+	<ul>
+		<li><u>Robust</u>
+			<ul>
+				<li>handle any browser, any browser configuration, and any extension
+					<ul>
+						<li>e.g. handle all possible errors and make no assumptions (use feature detection, try catches, type checking)</li>
+						<li>handle any adversarial (such as paradoxical) results. It is not incumbent on scripts (and certainly not on test sites) to show or calculate this, it can be done server-side or by a data broker</li>
+					</ul>
+				</li>
+			</ul>
+		</li>
+		<li><u>Correct</u>
+			<ul>
+				<li>produce a correct result
+					<ul>
+						<li>e.g. when measuring elements, the script should handle injected and custom website styles</li>
+						<li>e.g. detect a randomized canvas as randomized and record it as such (i.e a stable metric) vs not and therefore always record a unique random value and effectively poison your own data</li>
+					</ul>
+				</li>
+				<li>correctness is not strictly required if the result is consistent
+					<ul>
+						<li>i.e as long as all users are subject to the same "flaw" and data is not poisoned, but may affect potential entropy</li>
+						<li>e.g. if font enumeration tests are based on the platform, and in some cases the platform is incorrectly determined by the script (hence why metrics should be correct), then the font enumeration tests would not be as designed (e.g. checking Mac fonts on a Windows system, or skipping the test), but still return a consistent result</li>
+					</ul>
+				</li>
+			</ul>
+		</li>
+		<li><u>Reproducible</u>
+			<ul>
+				<li>produce the same result when run again or in a new session (without any browser/OS changes)
+					<ul>
+						<li>e.g. when measuring characters the script may need to await async font fallback <sup><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1676966#c54" target="_blank">bugzilla</a></sup> on first use in a browser session where a character may be rendered with the default font, and only fallback to the correct font afterwards</li>
+					</ul>
+				</li>
+			</ul>
+		</li>
+		<li><u>Stable</u>
+			<ul>
+				<li>the more stable a metric, the <i>easier</i> to weight, or to link over time</li>
+				<li>a metric or fingerprint is a snapshot in time and doesn't have to be stable
+					<ul>
+						<li>metrics can change for a number or reasons such as in a session (e.g. zooming, resizing windows, moving windows) or over time (e.g. updating the browser to a new version, installing new system fonts) or due to per site settings (permissions, zoom levels) or external factors (IP address)</li>
+						<li>metrics can be weighted and changed server-side - e.g. an IP address can be recorded in full and an additional property added server-side to reflect "tor node", "MullvadVPN", "proxy" etc. There is a whole science dedicated to linking changing fingerprints over time</li>
+					</ul>
+				</li>
+			</ul>
+		</li>
+		<li><u>Add Entropy</u>
+			<ul>
+				<li>a metric that adds no entropy is redundant
+					<ul>
+						<li>e.g. pointless to record a metric for <code>navigator.onLine</code> as it will always be <code>true</code> (otherwise how did the script load?)</li>
+					</ul>
+				</li>
+				<li>metric should do the bare minimum if maximizing entropy
+					<ul>
+						<li>e.g. if recording timezoneOffsets, checking all four seasons (for daylight saving changes) for every year (tzdata goes back to the 1800s) would amount to hundreds and hundreds of dates being tested but would produce maximum entropy. However, research and PoCs shows this can also be achieved with just ten dates.</li>
+					</ul>
+				</li>
+				<li>a metric should be optimized and balanced against performance
+					<ul>
+						<li>i.e where it is not feasible to gain maximum entropy, or maximum entropy is unknown</li>
+						<li>e.g. font enumeration is performance heavy as it touches the <code>DOM</code> <sup><a href="https://developer.mozilla.org/docs/Web/API/Document_Object_Model" target="_blank">MDN</a></sup> where each font has to be requested, loaded, rendered, and measured. A very large font test would likely add some extra entropy by catching outliers compared to a smaller selective font test, but may not be worth the performance cost. Since the platform can't be hidden, scripts could also use targeted platform-specific font tests.</li>
+					</ul>
+				</li>
+				<li>code should be optimized
+					<ul>
+						<li>e.g. in font enumeration, you compare measurements from a <code>font name</code> against three fallback <code>generic font-families</code> (monospace, sans-serif, serif). If you have already detected the font, you can skip checking any remaining generic font-families. When detecting a font, you are measuring a string of characters to see if it changes. The less unique characters in the string the faster it will render, and the larger the font size the more differences will be exposed - a combination of large font size with very short platform-specific strings can maintain detection whilst being more performant.</li>
+					</ul>
+				</li>
+			</ul>
+		</li>
+		<li><u>Universal</u>
+			<ul>
+				<li>the more universal a metric (and it's name and format), the easier it can be used by data brokers to link fingerprints and profiles
+					<ul><li>e.g. returning <code>navigator.languages</code> as an <code>array</code></li></ul>
+				</li>
+				<li>likewise, the more universal the metric's method
+					<ul>
+						<li>e.g. when you <i>create</i> a <code>canvas</code> there are many parameters you can set (canvas size, text, font and font size, colors, transformations etc) and many ways to <i>read</i> the value (getImageData, toBlob, toDataURL etc) - each of which affect the final result: so if there are ten scripts with ten different canvas tests, then you won't be able to link them using this metric</li>
+					</ul>
+				</li>
+			</ul>
+		</li>
+	</ul>
+	<p>Fingerprinters also want their scripts to be universal - the more widely spread a script is, the more traffic it can easily link.</p>
+	<p>A fingerprinting script will try to extract consistent results with enough entropy to meet their target (e.g. marketing claims of 95% of users) to sell themselves to clients, as performant and unobtrusive, to become widespread.</p>
+	<p>Now we know <i>what</i> fingerprinters want, this helps us know <i>how</i> to resist them.</p>
 </div>
 
-<hr>
-<h3><a name="part3"></a>PART 3: FINGERPRINTING RESISTANCE</h3>
-	<h4><a name="basics"></a>Resistance Basics</h4>
-	<h4><a name="methods"></a>Resistance Methods</h4>
-	<h4><a name="random"></a>Randomizing vs Static Methods</h4>
-	<h4><a name="methodology"></a>Tor Project Methodology</h4>
+<!--part3-->
+<div>
+	<hr>
+	<h3><a name="part3"></a>PART 3: FINGERPRINTING RESISTANCE</h3>
+	<p>This part is a supplement to <a href="https://gitlab.torproject.org/tpo/applications/wiki/-/wikis/Design-Documents/Tor-Browser-Design-Doc#33-adversary-attacks" target="_blank">Tor Browser Design Doc > 3.3 Adversary Attacks > 2. Fingerprint browser properties </a></p>
+	<div class="inset highlight">
+		All resistance and discussions and terms are in the <b>context</b> of what websites and servers can see - i.e. in the relevant <code>security contexts</code> <sup><a href="https://blog.mozilla.org/attack-and-defense/2020/06/10/understanding-web-security-checks-in-firefox-part-1/" target="_blank">Mozilla Blog: Principals</a></sup> as defined by Mozilla
+	</div>
+	<p>Now we know what entropy and equivalancy are, and the important of surprisals, and now we know what and how fingerprinting scripts work, we can form a fingerprint resistance strategy.</p>
+</div>
 
-<hr>
-<h3><a name="part4"></a>PART 4: TESTING</h3>
+<!--basics-->
+<div>
+	<hr class="dashed">
+	<h4><a name="basics"></a>Resistance Basics</h4>
+	<p>Fingerprint resistance relies on a "default crowd" (so users can have shared fingerprints). A crowd is a set of users being protected by an overall fingerprint resistance strategy. Notably both Tor Browser and Mullvad Browser with <code>RFP</code> (resistFingerprinting), and Brave's Shields fingerprinting protections are enabled by default. Firefox's fledgling <code>FPP</code> (fingerprintingProtection) is also default enabled in Private Browsing windows and with <code>ETP</code> (Enhanced Tracking Protection) in <code>Strict</code> mode.</p>
+	<div class="inset highlight">Opt-in crowds do not work</div>
+	<p>There is no such thing as "no fingerprint". There is always fingerprint data even without JavaScript. And the fingerprint protections <i>and techniques per metric</i> in each crowd are themselves fingerprintable.</p>
+	<p>There is no such thing as "a single fingerprint" for all users in a crowd, because there are "base" metrics with differences that we cannot hide or lie about or are currently not feasible to protect.</p>
+	<p>There is no such thing as "defeating fingerprinting". This is why <code>RFP</code> is called <i>resist</i> fingerprinting and not <i>defeat</i> fingerprinting. Resistance is an ongoing process and not a zero sum game.</p>
+	<p>There are five steps fingerprint resistance can take</p>
+	<ul>
+		<li><u>block</u> known scripts
+			<ul><li>the best fingerprinting code is no code, but this is easily bypassed, a form of enumerating badness, is inherently reactive, and can undermine legitimate uses causing breakage or rejection (anti-fraud and bot-detection)</li></ul>
+		</li>
+		<li><u>engineer</u> solutions to remove the fingerprint problem
+			<ul>
+				<li>e.g. Firefox ships, for all users, the same same math library in audio across all platforms. This removes the audio entropy caused by floating points, and the only differences left are equivalency of platform architecture (which we can't hide)</li>
+				<li>e.g. reduction in canvas entropy can be achieved by using software instead of hardware/GPU rendering</li>
+			</ul>
+		</li>
+		<li><u>change</u> existing and shape/reject new web standards</li>
+		<li><u>grow</u> the crowd
+			<ul>
+				<li>the bigger the crowd hopefully the more users you share a fingerprint with to help hide your traffic in</li>
+			</ul>
+		</li>
+		<li><u>reduce</u> <s>entropy</s> buckets</li>
+	</ul>
+	<div class="inset highlight">Resistance must come from built-in browser solutions</div>
+	<p>Resistance must come from built-in browser solutions. Extensions are not suitable as they often lack APIs to properly protect the real values and they have no default crowd. They can also provide additional bits of information (increased entropy) with prototype and proxy and other detectable tampering, can create performance issues and cause website breakage, and are likely to trigger anti-fraud and bot-detection scripts due to <code>adversarial</code> fingerprints (see "Resistance Methods" below).</p>
+	<p>An extension bundled for a crowd is an exception (e.g. NoScript for Tor Browser users), but care should be taken to ensure any measurable information configurable by the user is restricted (e.g. filter lists in uBlock Origin) or not persistent (e.g. per site exceptions should be session only). If the extension itself (e.g. NoScript) or it's assets (e.g. filter lists) are fingerprintable and that fingerprint changes over time, then it is important that users are always up-to-date.</p>
+</div>
+
+<!--random-->
+<div>
+	<hr class="dashed">
+	<h4><a name="random"></a>Randomizing vs Static Methods</h4>
+	<p>In <i>pure</i> resistance terms, it does not matter if a metric's fingerprint resistance is random or static, as long as the real value is protected. But it <i>does</i> matter as a choice of technique and has consequences.</p>
+	<p>Randomizing is said to "raise entropy". A metric that is different on each site per browser session makes that metric unstable and fingerprinting scripts want metrics to be stable (see "What do fingerprinters want?" above). A script that doesn't detect lies (called a <code>naive</code> script) collects an unstable fingerprint if that lie is randomized. The more metrics randomized, the greater the chance that a script is naive or "fooled" or collects "poisoned" data.</p>
+	<p>However, protected metrics can always be detected in a crowd - and tampering of some metrics can be detected individually. If the randomization is persistent per site (protected by a seed), a script can only <i>infer</i> it's actually randomized but given the <u>inference</u> example below this is not difficult. A script that does this is called an <code>advanced</code> script. When this happens and the metric was random, the value then becomes stable - i.e the script or backend tooling would record the metric's value as e.g. "random" or "untrustworthy". Any script or backend tooling that can do this, renders the purpose of fooling scripts moot.</p>
+	<div class="inset highlight">Given <i>any</i> script <i>could</i> detect all protections, for all intents and purposes, raising entropy can be treated the same as lowering entropy.</div>
+	<p>Scripts can determine protections in a number of ways: here are a few</p>
+	<div class="inset example">
+		<h5>Examples (detecting protections)</h5>
+			<ul>
+				<li><u>mathematical proofs</u>
+					<ul>
+						<li>e.g. known pixel tests in canvas and WebGL</li>
+						<li>e.g. known domrect measurements</li>
+					</ul>
+				</li>
+				<li><u>inference</u>
+					<ul>
+						<li>you can't hide your browser version or platform</li>
+						<li>you can't hide that you belong to a specific crowd</li>
+						<li>e.g. knowing you are desktop Tor Browser and because you are open source we know exactly what you do for that platform</li>
+					</ul>
+				</li>
+				<li><u>adverserial results</u>
+					<ul>
+						<li>deviations from expected or collected results</li>
+						<li>e.g. there are a finite number of benign offlineAudioContext results for web audio per platform and engine, so altering it would stand out as being tampered with</li>
+					</ul>
+				</li>
+				<li><u>third parties</u>
+					<ul>
+						<li>e.g. EFF's Cover Your Tracks redirects to <code>firstpartysimulator.net</code> and back</li>
+						<li>e.g. a "gateway" such as Cloudflare could share data with customers (the web sites)</li>
+					</ul>
+				</li>
+			</ul>
+	</div>
+	<p>Besides fooling naive scripts, randomizing <i>can</i> make sense depending on <u>usability</u>. For example in <code>canvas</code>, <i>subtle</i> randomizing can render a usable result for the end user versus rendering an unusable result to prevent averaging. Whereas randomizing the <code>userAgent</code> wouldn't provide any extra benefit for the user (and may cause compatability issues) versus restricting it to equivalency of platform, engine and version (all of which can't be hidden).</p>
+	<p>Another valid use case for randomizing is when it is currently the <u>only feasible solution</u>. So many variables contribute to <code>canvas</code> entropy (platform, architecture, graphics card and driver version, firmware, math libraries, available and default fonts, font versions, font smoothing or anti-aliasing ... to name but a few) that breaking the web standard completely and lying is the ony solution that makes sense.</p>
+	<div class="inset highlight">Unless there is a net benefit, such as usability, or it's the only current feasible solution, randomizing is best left unused.</div>
+	<p>All built-in browser solutions already randomize canvas, so the "fool" naive scripts trick is mostly covered <sup>1</sup>. Otherwise randomizing is problematic:</p>
+	<ul>
+		<li>it adds complexity
+			<ul>
+				<li>protecting the seed</li>
+				<li>staying plausible and non-adversarial</li>
+			</ul>
+		</li>
+		<li>it incurs maintenance and performance burdens</li>
+		<li>it carries risk
+			<ul>
+				<li>poor implementation can and has in the past (and in some cases STILL does) led to either <i>direct</i> bypasses or reverses the randomness</li>
+				<li>e.g. missing protections in all methods and sources</li>
+				<li>e.g. averaging or bucketing</li>
+				<li>e.g. too subtle</li>
+				<li>e.g. too simple to reverse</li>
+			</ul>
+		</li>
+	</ul>
+	<p>Because lowering entropy is ultimately the end result (assuming the worst - i.e an advanced script), as a consequence it is felt that randomizing (unless needed) is a risk with too many costs. This is why, for example, Tor Browser doesn't bother beyond it's per-execution non-seeded non-subtle randomized canvas.</p>
+	<p><sup>1</sup> Detecting tampered canvas is trivial and scripts are getting smarter. So depending on the threat model, it <i>might</i> make sense to randomize some extra metrics. If robust engineering for per-site (seed) is already in place, then a few additional select metrics would help - ideally metrics than can randomize a lot of non-adversarial values and are not as easily detected as tampered with.</p>
+
+</div>
+
+<!--methods-->
+<div>
+	<hr class="dashed">
+	<h4><a name="methods"></a>Resistance Methods</h4>
+	<div class="inset highlight">This article will focus on <u>reducing</u> buckets</div>
+	<p>Outside of <u>blocking</u> known scripts, <u>engineering</u> solutions, <u>influencing</u> web standards, and <u>growing</u> the crowd, we are left with manipulating metrics to <u>reduce</u> buckets in our crowd. Technically this is "breaking" web standards by not honoring the original or expected (real) values from a user perspective. But that is not (always) the case in the context of what websites and servers can "see".</p>
+	<p>The function of fingerprint resistance is to ultimately lower entropy (or more precisely to get the <i>best</i> entropy) for it's crowd. It does this by reducing buckets. Raising entropy by randomizing results can always be detected in a crowd (see "Randomizing vs Static Methods" above), and is treated as lowering entropy, given any script could detect it.</p>
+	<div class="inset highlight">Reducing buckets works on the simple premise of <u>limitation</u></div>
+	<p>Fingerprint resistance reduces buckets per metric by <u>limiting</u>
+		<ul>
+			<li><u>values</u> returned
+				<ul><li>e.g. userAgent, timeZoneName</li></ul>
+			</li>
+			<li><u>resources</u> used
+				<ul><li>e.g. available fonts and codecs, APIs enabled</li></ul>
+			</li>
+			<li><u>note</u>
+				<ul>
+					<li><u>randomizing</u> is also a form of limitation - i.e the result is limited to being "random" and can be values returned or resources used</li>
+				</ul>
+			</li>
+		</ul>
+	</p>
+	<p>As more metrics become resistant, this makes it harder and more costly for fingerprinters to gain enough buckets - they will need more methods, more tests, more metrics - and they will take a performance hit. When implementing resistance, to help maintain and grow the crowd, it is important to minimize user friction through information and managing expectations - this is best done in-browser with UX.</p>
+	<p>Another key component to fingerprint resistance, is to <u>protect the real value</u>, but this is not always <i>fully</i> possible (or the limitation has a bug that leaks). This leads to two possible outcomes (in the context of what websites can "see") in our limited values</p>
+	<ul>
+		<li><u>restricted</u> (truthful and <code>robust</code>)
+			<ul>
+				<li>resources or values used by the browser (inputs) are limited</li>
+				<li>limitations can be fully implemented to cover all <u>methods and sources</u> (if it isn't, that's a bug)</li>
+					<ul>
+						<li><u>methods</u>: all the ways to determine or infer the value</li>
+						<li><u>sources</u>: all origins: document, iframe, workers, service workers, first party, third party etc</li>
+					</ul>
+				<li>outputs are therefore always "truthful" and can be <code>benign</code> (see below)</li>
+				<li>i.e. there should be no difference in any fingerprinting between the <i>real</i> value vs using the same <i>restricted</i> value</li>
+			</ul>
+		</li>
+		<li><u>spoofed</u> (lies and a <code>calculated risk</code>)
+			<ul>
+				<li>limitations cannot be fully implemented (all methods and sources)</li>
+				<li>the web standard is <i>actually</i> broken (i.e not truthful)
+					<ul><li>e.g. canvas where the only current feasible option is to lie</li></ul>
+				</li>
+				<li>results are therefore always "lies" if exposed and <code>adversarial</code> (see below)</li>
+			</ul>
+		</li>
+	</ul>
+
+	<p>Not all fingerprinting scripts (or threat models) are the same. An advanced script can expose the consequences or outcomes of not only when the <u>real</u> value isn't <i>fully</i> protected, but also when poor decisions are made as to what the limitations are.</p>
+
+	<div class="inset highlightleft">
+		<h5>Adversarial vs Benign</h5>
+		<ul>
+			<li><u>result</u>: a metric/value or a set of metrics/values</li>
+			<li><u>benign</u>: a real-world result</li>
+			<li><u>adversarial</u>: not benign
+				<ul>
+					<li>e.g. there are a finite number of benign offlineAudioContext results per browser engine and platform, which fingerprinters know - so randomizing that metric stands out</li>
+					<li>e.g. touch capabilities on a Mac (there is no such thing yet)</li>
+				</ul>
+			</li>
+			<li><u>paradoxical</u>: conflicting results (also adversarial)
+				<ul>
+					<li>e.g. userAgent says "Windows", but platform has <i>"-apple-system"</i> font</li>
+					<li>e.g. a <u>spoofed</u> devicePixelRatio doesn't approximate to a <u>real</u> value calculated from the DOM</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+	<p>Limitations are not just returned but usually used. Metrics are not just looking up a value (e.g. locale) but also manifest in metrics that use those values (e.g. dates), and the user experience is subjected to those values. <u>Restricted</u> values offer the best experience and resistance - limiting input to control output as designed and expected by the engine creates compatible, expected, deterministic, and benign results (with the correct limitation).</p>
+	<div class="inset example">
+		<h5>Examples (used values)</h5>
+			<ul>
+				<li><code>languages</code>: can be used on multi-language websites to determine what language to display web-content in</li>
+				<li><code>locale</code>: used in <code>Intl</code> <sup><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Intl" target="_blank">MDN</a></sup> which is used for formatting currencies, dates and times, numbers and more</li>
+				<li><code>timeZoneName</code>: used in <code>Intl</code></li>
+				<li><code>font enumeration</code>: a font either exists (or is aliased to one that exists), or it doesn't exist (or is blocked)</li>
+				<li><code>inner window sizes</code>: used by web-content and layout</li>
+			</ul>
+	</div>
+	<p>Therefore, limiting values comes down to two options (always truthful and robust or a calculated risk with potential lies), and the solution chosen can differ based on resource constraints (e.g. bundling fonts), threat model (e.g. canvas averaging), feasibility (e.g. canvas), and complexity. When we limit we need to keep in mind the consequences of the values we return. Adversarial fingerprints can trigger anti-fraud and bot-detection scripts, so we should always use benign values where possible.</p>
+	<p>Using benign values does not guarantee a non-adversarial outcome as it may not be possible to fully protect the metric and if a script also detects the real value, they also detect a paradox. In these cases it becomes a risk assessment of how potential the lie is to be detected.</p>
+	<p>Let's look at <code>geolocation</code> as a example</p>
+	<div class="inset example">
+		<h5>Example (restricted): <code>geolocation</code></h5>
+		<p>This metric consists of "is it enabled", "what is the default permission" and if permission is granted (and therefore a user choice per site) this provides location data (even coarse location data is high entropy)</p>
+		<ul>
+			<li><u>disabling the API</u> (poor)
+				<ul>
+					<li>disabling an API or web standard should be a last resort, as it can lead to website breakage and less functionality</li>
+					<li>This is Tor Browser's current implementation and the default permission (exposed in Settings) is <u>not</u> protected</li>
+					<li><u>all users are (hopefully) the same</u>: geolocation disabled, the default permission, no location possible</li>
+				</ul>
+			</li>
+		</ul>
+		<p>Alternatively, we could enable the API and instead restrict what the context sees, calculates, uses or returns with benign values and let the browser engineering behave as expected to output web standard compliant, compatible, plausible and non-adversarial results</p>
+		<ul>
+			<li><u>default deny</u> (simpler)
+				<ul>
+					<li>enable the API, ignore default and site exception permissions and return "deny"</li>
+					<li><u>all users are the same</u>: geolocation enabled, default deny, no location possible</li>
+				</ul>
+			</li>
+			<li><u>default prompt</u> (more complex)
+				<ul>
+					<li>enable the API, ignore default and site exception permissions and return "prompt", suppress the prompt if location requested and deny with a random human reaction time. Optionally indicate to the user that geolocation was requested (to potentially allow a per-site per-session override, depending on the crowd's threat model)</li>
+					<li><u>all users are the same</u>: geolocation enabled, default prompt, location denied looking like a human (and possibly allow per-site per-session for functionality)</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+	<p>Here are a few more examples: each metric will have it' sown possible solutions</p>
+	<div class="inset example">
+		<h5>Example (restricted): <code>ac-SampleRate</code></h5>
+		<ul><li><u>all users are the same</u>: return and use <code>44100</code> Hz</li></ul>
+		<h5>Example (restricted resource): <code>font enumeration</code></h5>
+		<p>Note: You can't lie about fonts: they either exist or are aliased to and are <u>used</u> - or they don't exist or are blocked and are <u>not used</u></p>
+		<ul>
+			<li><u>limit</u> the fonts available to web-content per platform (i.e Windows, Linux, Mac, Android) to some set of system fonts (provided by the platform)</li>
+			<li>limit as much as possible to those expected across <i>each</i> platform (e.g. for Windows cover Windows 10 and 11) but try and cover modern writing systems <sup><a href="https://en.wikipedia.org/wiki/List_of_writing_systems" target="_blank">wikipedia</a></sup></li>
+			<li>bundle fonts with the browser (to cover writing system gaps)
+				<ul>
+					<li>this is also "engineering a solution", similar to bundling and using the same math libraries across platform architectures</li>
+				</ul>
+			</li>
+			<li>e.g in desktop Tor Browser most fonts are bundled to provide comprehensive coverage for writing systems. Some system fonts are also allowed on Windows and Mac, especially for <code>CJK</code> (Chinese, Japanese, Korean), for platform consistency ("looks and feels", e.g widgets) and to save on package sizes</li>
+			<ul>
+				<li>this is an example of both a resource constraint as file sizes are not trivial (CJK font files for example are large and may be cost prohibitive to ship), and threat model, where Tor Browser deems font fingerprinting entropy to be too high without much tighter control</li>
+			</ul>
+			<li><u>all users are (hopefully) the same</u> per desktop platform, which is equivalency of something we cannot resist</li>
+		</ul>
+	</div>
+	<p>Sometimes, however, it is not possible to <i>fully</i> protect a metric yet - usually due to physical device contraints (e.g. <code>devicePixelRatio</code>, screen resolution) or the web standard is broken (i.e not truthful (e.g. <code>canvas</code>). Here are some examples</p>
+	<div class="inset example">
+		<h5>Examples (spoofed)</h5>
+		<ul>
+
+> - <code>hardwareConcurrency</code>
+>    - Tor Browser currently returns <code>2</code> for all users but could return more plausible numbers per OS.
+>    - This does not prevent the browser from using all available cores, which can be estimated with workers and timing attacks
+> - <code>screen dimensions</code>
+>    - Screen spoofs are typically based on a combination of screen and window dimensions for plausibility
+>    - But the real screen resolution can be exposed (or inferred) if a user goes fullscreen (F11) or uses a fullscreenElement (e.g. clicking to view a video in fullscreen)
+> - <code>canvas</code> (reads)
+>   - Canvas is typically only protected (lies) when read, not drawn - drawn canvases are always truthful (to what it was told to draw)
+>   - But when canvas data reads are used (e.g. to create more canvases or for a fingerprint), they break web standards and are detectable lies
+
+		</ul>
+	</div>
+
+
+</div>
+
+<!--consider-->
+<div>
+	<hr class="dashed">
+	<h4><a name="consider"></a>Resistance Considerations</h4>
+</div>
+
+<!--method-->
+<div>
+	<hr class="dashed">
+	<h4><a name="methodology"></a>Tor Project Methodology</h4>
+</div>
+
+<!--part4-->
+<div>
+	<hr>
+	<h3><a name="part4"></a>PART 4: TESTING</h3>
+</div>
+
+<!--test basics-->
+<div>
+	<hr class="dashed">
 	<h4><a name="test"></a>Test Basics</h4>
+</div>
+
+<!--test sites-->
+<div>
+	<hr class="dashed">
 	<h4><a name="sites"></a>Test Sites</h4>
+</div>
 
 <hr><br>the end<br>
 
