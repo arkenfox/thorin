@@ -28,6 +28,10 @@
 		div.highlightleft {
 			background-color: #e8e1ff; /* purple */
 		}
+		div.red {
+			background-color: #ffb8b8; /* red */
+			text-align: center;
+		}
 		div.quote {background-color: #fff0e1;} /* orange */
 		code {
 			background: rgba(142, 142, 145, 0.25) !important;
@@ -46,8 +50,15 @@
 <h2>DRAFT: Browser Fingerprinting</h2>
 <i>A general overview of browser fingerprinting and resistance methods</i>
 <hr>
-
-date: NOV 2025 | author: thorin
+<p>date: NOV 2025</p>
+<p>author: thorin</p>
+<p>peer review: <i>(many thanks)</i></p>
+<ul>
+	<li>Pier Angelo Vendrame (Tor Project)</li>
+	<li>Tom Ritter (Mozilla)</li>
+	<li>add more names here</li>
+</ul>
+<hr>
 
 <!--contents-->
 <div>
@@ -84,7 +95,10 @@ date: NOV 2025 | author: thorin
 		<li><a href="#part4">PART 4: TESTING</a>
 			<ul>
 				<li><a href="#test">Test Basics</a></li>
+				<li><a href="#data">Test Data</a></li>
+				<li><a href="#nodata">No Data</a></li>
 				<li><a href="#sites">Test Sites</a></li>
+				<li><a href="#future">The Future</a></li>
 			</ul>
 		</li>
 	</ul>
@@ -94,10 +108,9 @@ date: NOV 2025 | author: thorin
 <div>
 	<hr class="dashed">
 	<h3>FOREWORD</h3>
-	<p>This article's use of the word <code>fingerprint</code> refers to <code>browser fingerprinting</code>, also known as <code>device fingerprinting</code>, unless explicitly stated, and focuses on <code>active</code> (also known as client-side or browser) JavaScript (<code>JS</code>) fingerprinting.
+	<p>This article's use of the word <code>fingerprint</code> refers to <code>browser fingerprinting</code>, also known as <code>device fingerprinting</code>, unless explicitly stated, and focuses on <code>active</code> (also known as client-side or browser) JavaScript fingerprinting.</p>
 	<!--
 	A <code>metric</code> refers to a fingerprint property (such as preferred web-content language) or a collection of properties, and a <code>bucket</code> is a unique result in a metric or fingerprint. <code>Entropy</code> is the result of the spread of users across a bucket and depends on the metric value. And <code>RFP</code> (resistFingerprinting) is a gecko (Firefox) setting developed in conjunction with Mozilla for Tor Browser to "resist" fingerprinting.-->
-	</p>
 </div>
 
 <!--part1-->
@@ -603,7 +616,7 @@ date: NOV 2025 | author: thorin
 			</li>
 		</ul>
 	</div>
-	<p>When resisting fingerprinting there are metrics that cannot be hidden, lied about or feasible</p>
+	<p>When resisting fingerprinting there are metrics that cannot be hidden or lied about, or may not be feasible to protect</p>
 	<ul>
 		<li><u>hidden</u>: e.g.
 			<ul>
@@ -857,15 +870,23 @@ date: NOV 2025 | author: thorin
 				<li><u>third parties</u>
 					<ul>
 						<li>e.g. EFF's Cover Your Tracks redirects to <code>firstpartysimulator.net</code> and back</li>
-						<li>e.g. a "gateway" such as Cloudflare could share data with customers (the web sites)</li>
+						<li>e.g. a "gateway" such as Cloudflare could share data with customers (the websites)</li>
 					</ul>
 				</li>
 			</ul>
 	</div>
+	<p>Randomization is usually and best done per-site (eTLD+1), per-session, and per-window-type (normal vs private/incognito etc). However, this leads to yet another potential problem - this time with state ("site data and cookies").</p>
+	<div class="inset quote">
+		<p>Antoine Vastel <sup><a href="https://blog.castle.io/what-browser-fingerprinting-tests-like-amiunique-and-browserleaks-really-show-and-what-they-miss/" target="_blank">castle.io blog</a></sup></p>
+		<i>&ldquo; For example, if your session cookie stays the same but your fingerprint suddenly reflects a different OS or rendering engine, it violates basic assumptions about how real devices behave. This is exactly the kind of inconsistency that risk-based authentication systems are trained to catch, and it often results in:
+		<ul><li>More frequent CAPTCHAs</li><li>Secondary verification challenges</li><li>Session invalidation or outright blocks&rdquo;</li></ul>
+		</i>
+	</div>
+	<p>I'm not saying that built-in browser solutions would randomize the platform or engine - these are trivial, core, "base" metrics that can't be hidden or lied about (but I have seen plenty of non-browser solutions do this). The point is the inconsistency. Even saniziting here is not a panacea, as re-identification through logins would <i>still</i> provide a history of inconsistency.</p>
 	<p>Besides fooling naive scripts, randomizing <i>can</i> make sense depending on <u>usability</u>. For example in <code>canvas</code>, <i>subtle</i> randomizing can render a usable result for the end user versus rendering an unusable result to prevent averaging. Whereas randomizing the <code>userAgent</code> wouldn't provide any extra benefit for the user (and may cause compatability issues) versus restricting it to equivalency of platform, engine and version (all of which can't be hidden).</p>
 	<p>Another valid use case for randomizing is when it is currently the <u>only feasible solution</u>. So many variables contribute to <code>canvas</code> entropy (platform, architecture, graphics card and driver version, firmware, math libraries, available and default fonts, font versions, font smoothing or anti-aliasing ... to name but a few) that breaking the web standard completely and lying is the ony solution that makes sense.</p>
 	<div class="inset highlight">Unless there is a net benefit, such as usability, or it's the only current feasible solution, randomizing is best left unused.</div>
-	<p>All built-in browser solutions already randomize canvas, so the "fool" naive scripts trick is mostly covered <sup>1</sup>. Otherwise randomizing is problematic:</p>
+	<p>All built-in browser solutions already randomize canvas, so the "fool" naive scripts trick (for browsers that care about that thing) is mostly covered <sup>1</sup>. Otherwise randomizing is problematic:</p>
 	<ul>
 		<li>it adds complexity
 			<ul>
@@ -886,7 +907,6 @@ date: NOV 2025 | author: thorin
 	</ul>
 	<p>Because lowering entropy is ultimately the end result (assuming the worst - i.e an advanced script), as a consequence it is felt that randomizing (unless needed) is a risk with too many costs. This is why, for example, Tor Browser doesn't bother beyond it's per-execution non-seeded non-subtle randomized canvas.</p>
 	<p><sup>1</sup> Detecting tampered canvas is trivial and scripts are getting smarter. So depending on the threat model, it <i>might</i> make sense to randomize some extra metrics. If robust engineering for per-site (seed) is already in place, then a few additional select metrics would help - ideally metrics than can randomize a lot of non-adversarial values and are not as easily detected as tampered with.</p>
-
 </div>
 
 <!--methods-->
@@ -903,7 +923,7 @@ date: NOV 2025 | author: thorin
 				<ul><li>e.g. userAgent, timeZoneName</li></ul>
 			</li>
 			<li><u>resources</u> used
-				<ul><li>e.g. available fonts and codecs, APIs enabled</li></ul>
+				<ul><li>e.g. available fonts, codecs, APIs and web standards</li></ul>
 			</li>
 			<li><u>note</u>
 				<ul>
@@ -912,6 +932,20 @@ date: NOV 2025 | author: thorin
 			</li>
 		</ul>
 	</p>
+	<div class="inset highlightleft">
+		<h5>Resources</h5>
+		<p>Disabling an API or web standard should be a last resort, as it can lead to:</p>
+		<ul>
+			<li><u>website breakage</u>
+				<ul><li>scripts may expect a web standard to exist and don't "feature check" first or provide error handling</li></ul>
+			</li>
+			<li><u>less functionality</u>
+				<ul>
+					<li>e.g. blocking (or overly limiting) fonts can lead to tofu <sup><a href="https://en.wikipedia.org/wiki/Noto_fonts#Etymology" target="_blank">wikipedia</a></sup></li>
+					<li>tofu: &#x10FFEE; &#x10FFEE; &#x10FFEE;</li></ul>
+			</li>
+		</ul>
+	</div>
 	<p>As more metrics become resistant, this makes it harder and more costly for fingerprinters to gain enough buckets - they will need more methods, more tests, more metrics - and they will take a performance hit. When implementing resistance, to help maintain and grow the crowd, it is important to minimize user friction through information and managing expectations - this is best done in-browser with UX.</p>
 	<p>Another key component to fingerprint resistance, is to <u>protect the real value</u>, but this is not always <i>fully</i> possible (or the limitation has a bug that leaks). This leads to two possible outcomes (in the context of what websites can "see") in our limited values</p>
 	<ul>
@@ -930,16 +964,14 @@ date: NOV 2025 | author: thorin
 		<li><u>spoofed</u> (lies and a <code>calculated risk</code>)
 			<ul>
 				<li>limitations cannot be fully implemented (all methods and sources)</li>
-				<li>the web standard is <i>actually</i> broken (i.e not truthful)
+				<li>or the web standard is <i>actually</i> broken (i.e not truthful)
 					<ul><li>e.g. canvas where the only current feasible option is to lie</li></ul>
 				</li>
 				<li>results are therefore always "lies" if exposed and <code>adversarial</code> (see below)</li>
 			</ul>
 		</li>
 	</ul>
-
 	<p>Not all fingerprinting scripts (or threat models) are the same. An advanced script can expose the consequences or outcomes of not only when the <u>real</u> value isn't <i>fully</i> protected, but also when poor decisions are made as to what the limitations are.</p>
-
 	<div class="inset highlightleft">
 		<h5>Adversarial vs Benign</h5>
 		<ul>
@@ -972,21 +1004,16 @@ date: NOV 2025 | author: thorin
 	</div>
 	<p>Therefore, limiting values comes down to two options (always truthful and robust or a calculated risk with potential lies), and the solution chosen can differ based on resource constraints (e.g. bundling fonts), threat model (e.g. canvas averaging), feasibility (e.g. canvas), and complexity. When we limit we need to keep in mind the consequences of the values we return. Adversarial fingerprints can trigger anti-fraud and bot-detection scripts, so we should always use benign values where possible.</p>
 	<p>Using benign values does not guarantee a non-adversarial outcome as it may not be possible to fully protect the metric and if a script also detects the real value, they also detect a paradox. In these cases it becomes a risk assessment of how potential the lie is to be detected.</p>
-	<p>Let's look at <code>geolocation</code> as a example</p>
+	<p>Let's look at some <code>geolocation</code> examples. This metric consists of "is the Geolocation API enabled", "what is the default permission" (from the Permissions API) and if permission is granted (and therefore a user choice per site) this provides location data (even coarse location data is high entropy). In these examples, we want to prevent the user from ever granting permission.</p>
 	<div class="inset example">
 		<h5>Example (restricted): <code>geolocation</code></h5>
-		<p>This metric consists of "is it enabled", "what is the default permission" and if permission is granted (and therefore a user choice per site) this provides location data (even coarse location data is high entropy)</p>
 		<ul>
-			<li><u>disabling the API</u> (poor)
+			<li><u>disabled API</u> (poor)
 				<ul>
-					<li>disabling an API or web standard should be a last resort, as it can lead to website breakage and less functionality</li>
 					<li>This is Tor Browser's current implementation and the default permission (exposed in Settings) is <u>not</u> protected</li>
 					<li><u>all users are (hopefully) the same</u>: geolocation disabled, the default permission, no location possible</li>
 				</ul>
 			</li>
-		</ul>
-		<p>Alternatively, we could enable the API and instead restrict what the context sees, calculates, uses or returns with benign values and let the browser engineering behave as expected to output web standard compliant, compatible, plausible and non-adversarial results</p>
-		<ul>
 			<li><u>default deny</u> (simpler)
 				<ul>
 					<li>enable the API, ignore default and site exception permissions and return "deny"</li>
@@ -995,13 +1022,14 @@ date: NOV 2025 | author: thorin
 			</li>
 			<li><u>default prompt</u> (more complex)
 				<ul>
-					<li>enable the API, ignore default and site exception permissions and return "prompt", suppress the prompt if location requested and deny with a random human reaction time. Optionally indicate to the user that geolocation was requested (to potentially allow a per-site per-session override, depending on the crowd's threat model)</li>
-					<li><u>all users are the same</u>: geolocation enabled, default prompt, location denied looking like a human (and possibly allow per-site per-session for functionality)</li>
+					<li>enable the API, ignore default and site exception permissions and return "prompt", suppress the prompt if location requested and deny with a random human reaction time. Optionally indicate to the user that geolocation was requested</li>
+					<li><u>all users are the same</u>: geolocation enabled, default prompt, location denied looking like a human</li>
 				</ul>
 			</li>
 		</ul>
 	</div>
-	<p>Here are a few more examples: each metric will have it' sown possible solutions</p>
+	<p>In the above examples, disabling the API <i>is</i> causing website breakage. Additionally, permission needs protection. All major browsers ship with geolocation enabled with a default prompt. We can be smarter these days and alternatively could enable the API and instead restrict (<u>input</u>) what the context sees, calculates, uses or returns with benign values - i.e let the browser engineering behave as expected to <u>output</u> web standard compliant, compatible, plausible and non-adversarial results.</p>
+	<p>Here are a few more examples: each metric will have it's own possible solutions</p>
 	<div class="inset example">
 		<h5>Example (restricted): <code>ac-SampleRate</code></h5>
 		<ul><li><u>all users are the same</u>: return and use <code>44100</code> Hz</li></ul>
@@ -1022,55 +1050,449 @@ date: NOV 2025 | author: thorin
 			<li><u>all users are (hopefully) the same</u> per desktop platform, which is equivalency of something we cannot resist</li>
 		</ul>
 	</div>
-	<p>Sometimes, however, it is not possible to <i>fully</i> protect a metric yet - usually due to physical device contraints (e.g. <code>devicePixelRatio</code>, screen resolution) or the web standard is broken (i.e not truthful (e.g. <code>canvas</code>). Here are some examples</p>
+	<p>Sometimes, however, it is not possible to <i>fully</i> protect a metric yet - usually due to physical device contraints (e.g. <code>devicePixelRatio</code>, screen resolution) or the web standard is broken - i.e not truthful (e.g. <code>canvas</code>). Here are some examples</p>
 	<div class="inset example">
-		<h5>Examples (spoofed)</h5>
+		<h5>Examples (spoofed: lies and a potential risk)</h5>
 		<ul>
-
-> - <code>hardwareConcurrency</code>
->    - Tor Browser currently returns <code>2</code> for all users but could return more plausible numbers per OS.
->    - This does not prevent the browser from using all available cores, which can be estimated with workers and timing attacks
-> - <code>screen dimensions</code>
->    - Screen spoofs are typically based on a combination of screen and window dimensions for plausibility
->    - But the real screen resolution can be exposed (or inferred) if a user goes fullscreen (F11) or uses a fullscreenElement (e.g. clicking to view a video in fullscreen)
-> - <code>canvas</code> (reads)
->   - Canvas is typically only protected (lies) when read, not drawn - drawn canvases are always truthful (to what it was told to draw)
->   - But when canvas data reads are used (e.g. to create more canvases or for a fingerprint), they break web standards and are detectable lies
-
+			<li><u>hardwareConcurrency</u>
+				<ul>
+					<li>All Tor Browser users currently return <code>8</code> for Mac and <code>4</code> for all other platforms</li>
+					<li>This does not prevent the browser from using all available cores, which can be estimated with workers and timing attacks. Notably Tor Browser also has timing protections</li>
+				</ul>
+			</li>
+			<li><u>screen dimensions</u>
+				<ul>
+					<li>Screen spoofs are typically based on a combination of screen and window dimensions for plausibility</li>
+					<li>But the real screen resolution can be exposed (or inferred) if a user goes fullscreen (F11) or uses a fullscreenElement (e.g. clicking to view a video in fullscreen)</li>
+				</ul>
+			</li>
+			<li><u>canvas (reads)</u>
+				<ul>
+					<li>Canvas is typically only protected (lies) when read, not drawn - drawn canvases are always truthful (to what it was told to draw)</li>
+					<li>But when canvas data reads are used (e.g. to create more canvases or for a fingerprint), they break web standards and are detectable lies</li>
+				</ul>
+			</li>
 		</ul>
 	</div>
-
-
+	<p>It is not imperative that limitations make all users be the "same" (allowing for equivalency), as that may not be feasible or even desirable. The goal of fingerprint resistance is <u>protect the real value</u> (restricted robustly or spoofed as a calculated risk) through <u>limitation</u> in order to <u>reduce buckets</u> (values) which in turn makes it harder for fingerprinting scripts.</p> 
+	<div class="inset example">
+		<h5>Examples (partial)</h5>
+		<ul>
+			<li><u>restricted</u>
+				<ul>
+					<li><code>languages and locale</code>: not all users speak the same language, so the restriction needs to cover a range</li>
+					<li><code>font enumeration</code>
+						<ul>
+							<li>Bundling enough fonts may not be an option</li>
+							<li>Protection can be reliant on the system's default fonts which can vary per platform version (e.g. Windows 10 vs 11) or edition (e.g. Windows LTSC, SE, Enterprise, Home, Professional etc)</li>
+							<li>Supplemental fonts are often provided by default based on the platform locale/language</li>
+							<li>Restrict too tightly you get broken writing systems, restrict too loose you get <s>entropy</s> more buckets. Regardless, either way it eliminates high entropy items such as fonts installed with applications (e.g. Microsoft Office, LibreOffice, or Adobe)</li>
+						</ul>
+					</li>
+				</ul>
+			</li>
+			<li><u>spoofed</u>
+				<ul>
+					<li>fingerprinting scripts have to work harder in order to expose the spoof - e.g. run known pixel tests, averaging attempts, touch the DOM</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+	<br>
 </div>
 
 <!--consider-->
 <div>
 	<hr class="dashed">
 	<h4><a name="consider"></a>Resistance Considerations</h4>
+	<p>Fingerprinting resistance can lead to undesirable side-effects or outcomes. Solutions should provide a good user experience and as much as possible aim for:</p>
+	<ul>
+		<li><u>usability</u> (and reduced user friction)
+			<ul><li>e.g. disable APIs only as last resort, allow fonts to cover writing systems, use subtle canvas randomization for usable canvases and to reduce user interventions (site exceptions), add UX for informative/educational purposes, provide site exceptions</li></ul>
+		</li>
+		<li><u>accessibility</u>
+			<ul><li>e.g. force-underlining links by default in websites is useful for people with <code>achromatopsia</code> <sup><a href="https://en.wikipedia.org/wiki/Achromatopsia" target="_blank">wikipeia</a></sup></li></ul>
+		</li>
+		<li><u>compatibility & plausibility</u>
+			<ul>
+				<li>always use <u>benign</u> values to minimize <u>adversarial</u> fingerprints</li>
+				<li>ensure all methods are covered (for spoofed values, as much as possible, since they are not truthful by definition)
+					<ul>
+						<li>e.g. screen dimensions: JavaScript (such as screen properties and <code>matchMedia</code>) and CSS (media queries) should match</li>
+						<li>timeZoneName: protection should cover <code>Date</code> <sup><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Date" target="_blank">MDN</a></sup>, <code>lastModified</code> strings and other timestamps such as in performance APIs</li>
+						<li>e.g. <code>userAgent</code> should match in HTTP request header and navigator (including other relevant navigator agent properties such as <code>appVersion</code>)</li>
+						<li>e.g. outer window "size behavior" should match what happens in each OS when windowed, maximized, fullscreen (F11) and in fullScreenElement</li>
+					</ul>
+				</li>
+				<li>ensure all sources are covered
+					<ul><li>e.g. document, iframes, workers, service workers, first party, third party, <code>about:blank</code></li></ul>
+				</li>
+			</ul>
+		</li>
+	</ul>
+	<div class="inset highlightleft">
+		<h5>In other words</h5>
+		<p>Try not to give scripts any reason to "break" things with disabled APIs.</p>
+		<p>Try not to "break" anything by always using <u>benign</u> values, preferably with <u>restriction</u> covering all methods and sources to always be truthful (just like a real value). Risk <u>spoofing</u> if required or unavoidable, knowing that it could be detected (<u>adversarial</u>).</p>
+		<p>Be mindful of usability and accessibility. Educate and inform users where this isn't possible.</p>
+	</div>
+	<p>The ideal end result is for users to enjoy a <i>seemless</i> experience - and happy users maintain and grow the crowd (see "Resistance Basics" above).</p>
 </div>
 
 <!--method-->
 <div>
 	<hr class="dashed">
 	<h4><a name="methodology"></a>Tor Project Methodology</h4>
+	<p>Tor Project always assumes advanced scripts and worst outcomes (high entropy, targeted attacks). Whether it is assessing a PoC (Proof of Concept) or new/changed web standards and APIs, the steps are to <u>investigate</u>, <u>analyse</u> the causes, <u>evaluate</u> resistance options, and <u>prioritize</u> any solutions based on resources, buckets, and difficulty/ability to resist. Each metric will have it's own unique set of circumstances.</p>
+	<p>INVESTIGATE</p>
+	<ul>
+		<li><u>Confirm</u> different results can be obtained
+			<ul><li>e.g. detection of a content blocker, such as uBlock Origin is a binary outcome. This would not add entropy to a crowd if all users are the same: i.e uBlock Origin is bundled and enforced</li></ul>
+		</li>
+		<li><u>Explore potential entropy</u>
+			<ul><li>e.g. entropy within a content blocker: such as detection of user-optional filter lists</li></ul>
+		</li>
+		<li><u>Explore the method</u>
+			<ul><li>e.g. protecting the <code>timezoneOffset</code> in DOMParser's <code>lastModifed</code> string also led to the same type of protection (timestamps as strings) in <code>EXSLT</code></li></ul>
+		</li>
+		<li><u>Determine equivalency</u>
+			<ul>
+				<li>i.e. is it part of a larger issue or something we don't care to (or can't) protect</li>
+				<li>e.g. you are using Tor Browser (equivalency of the crowd) or your OS is Linux (equivalency of platform)</li>
+				<li>e.g. audio math is a subset (less functions and smaller range) of <code>Math</code>. If we patch audio math entropy, that entropy can still be gained via <code>Math</code></li>
+			</ul>
+		</li>
+	</ul>
+	<div class="inset example">
+		<h5>Example (investigate): <code>device orientation</code></h5>
+		<ul>
+			<li>This can be one of four values
+				<ul><li>"landscape-primary", "portrait-primary", "portrait" (flipped), "landscape" (upside down)</li></ul>
+			</li>
+			<li>Looking at desktop lets guess/estimate
+				<ul>
+					<li>probability: <code>95%</code>, <code>4.5%</code>, <code>0.45%</code>, <code>0.05%</code></li>
+					<li>information bits: <code>0.074</code>, <code>4.474</code>, <code>7.796</code>, <code>10.966</code></li>
+					<li>entropy: (<code>0.95 x 0.074 + 0.045 x 4.474 + 0.0045 x 7.796 + 0.0005 x 10.966</code> = <code>0.3122</code></li>
+				</ul>
+			</li>
+			<li>Since all users are not the same, the metric illustrates entropy across all users. Those not in the vast majority provide disproportionally more bits the more uncommon their orientation</li>
+			<li>On Android this is not a stable fingerprinting metric, as users normally (but not guaranteed) have auto-rotate enabled and phones and tablets always have an obvious default</li>
+		</ul>
+	</div>
+	<p>ANALYSE</p>
+	<ul>
+		<li><u>Understand the causes</u>
+			<ul>
+				<li>e.g. <code>measurements</code>: multiple settings can alter sizes (and subpixels), such as system scaling, or zoom (to name a few). And depending on what you are measuring, additional settings, such as for fonts (language, default fonts and sizes per writing system and generic font-family, platform, etc)</li>
+				<li>e.g <code>canvas</code>: can contain a combination of multiple underlying factors: incorporating math, css colors, fonts, subpixels, anti-aliasing, GPU/hardware/software, compression levels, and more into a single rendering</li>
+				<li>e.g. <code>Math</code> entropy comes from floating points across platform architecture and different math libraries</li>
+			</ul>
+		</li>
+		<li><u>Evaluate resistance options</u>
+			<ul>
+				<li>see "Resistance Methods" section above</li>
+				<li>note: some solutions may be too hard to <i>fully</i> solve for now (e.g. subpixels), not practical (e.g. bundling all CJK fonts on Windows/Mac) or not legal (e.g. bundling all codecs due to licensing)</li>
+			</ul>
+		</li>
+		<li><u>Prioritise</u>: factors include:
+			<ul>
+			 <li>potential entropy</li>
+			 <li>threat assessment: e.g. see canvas subtle randomization vs Tor Browser's RFP approach</li>
+			 <li>risk: i.e. likelihood
+					<ul><li>e.g. passive and/or active | requires user activation/gestures | is behavioural (such as typing) | cost to fingerprinters</li></ul>
+				</li>
+			 <li>difficulty/resources required to resist</li>
+			</ul>
+		</li>
+	</ul>
+	<div class="inset example">
+		<h5>Example (analyse): <code>device orientation</code></h5>
+		<ul>
+			<li>Provided by <code>screen.orientation*</code> values and legacy mozOrientation</li>
+			<li>Deterministic from screen measurements and css</li>
+			<li>Since all methods are ultimately derived from (or equivalency of) the screen resolution (the platform provides the flipped values) and since we can't <u>restrict</u> the screen (i.e we can't change your <i>real</i> resolution), we have to <u>spoof</u> the screen, and all methods would need to use the spoofed screen values. Additionally we can limit the flipped information.</li>
+		</ul>
+	</div>
+	<p>If resistance is added, there are additional steps: <u>implementation</u>, <u>UX</u> and <u>testing</u>.</p>
+	<p>IMPLEMENT</p>
+	<p>Due to Tor Browser's unique relationship with Mozilla and by virtue of using gecko, there are a number of possible options</p>
+	<ul>
+		<li><u>Flag(s)</u>
+			<ul>
+				<li>for peer review and cleanup: ask pierov: not sure we use any of these specifically for FPing - but we do have e.g. no webrtc (but that could also be done with a pref) - but the buidl flag also means less dependencies bundled - e.g. maybe the widevine thingy is applicable here as an example?</li>
+			</ul>
+		</li>
+		<li><u>Pref(s)</u>
+			<ul>
+				<li>Mozilla often implements changes behind prefs (settings in <code>about:config</code>) for testing, rollouts, finer control, different settings for platforms, and for future changes</li>
+				<li>Sometimes prefs can help provide a solution and is an easy and quick method. The downside is the pref may be deprecated in future. Additionally users could change the preference (but it could also be <code>locked</code> in stable release if deemed vital)</li>
+			</ul>
+		</li>
+		<li><u>Patch</u>: <i>ideally</i> protections should:
+			<ul>
+				<li>eventually be behind RFP and in Mozilla's codebase (to reduce rebasing), but that's not always possible. Patches can be applied in Tor Browser and <code>uplifted</code>, or patched in Firefox and <code>backported</code>. Either way, this needs to be managed in a timely fashion</li>
+				<li>ignore any prefs - e.g. userAgent overrides and prefers-color-scheme</li>
+				<li>have built-in tests</li>
+			</ul>
+		</li>
+	</ul>
+	<div class="inset example">
+		<h5>Example (implement): <code>device orientation</code></h5>
+		<ul>
+			<li>Screen metrics on desktop are <i>already</i> <u>spoofed</u> based on the <u>limited</u> inner window</li>
+			<li>The spoofed screen measurements should determine the spoofed device orientation
+				<ul><li>e.g. returning landscape* with screen measurements that are portrait* would be a paradox (breaking the spec)</li></ul>
+			</li>
+			<li>The spoofed device orientation should be <u>limited</u> to <code>primary</code>
+				<ul><li>web-content doesn't care if you're right-side-up or upside-down</li></ul>
+			</li>
+			<li>The <code>orientation.angle</code> should match the spoofed device orientation per platform (it differs on Android)</li>
+			<li>This would need to be coded behind RFP</li>
+		</ul>
+	</div>
+	<p>UX (if needed)</p>
+	<p>Anything that can be done to strengthen protections (which arguably should all be done in code), or to inform users and manage expectations, or to reduce user friction and confusion: such as:</p>
+	<ul>
+		<li><u>informational</u>: e.g. displaying letterboxing dimensions when appropriate</li>
+		<li><u>additional</u>: e.g. letterboxing option settings, the UX for allowing canvas permission exceptions</li>
+		<li><u>removal</u>: e.g. settings for "website appearance" (prefers-color-scheme: automatic, light, dark) which has no effect</li>
+	</ul>
+	<div class="inset example">
+		<h5>Example (UX): <code>languages and locale</code></h5>
+		<ul>
+			<li>all languages supported are bundled (not downloaded remotely which is blocked), and the application language is used to tightly control requested languages and locale, with the ability to use English for web pages (regardless of the application language)</li>
+			<li>strengthen protection by removing the setting to "choose your preferred language for displaying pages" as the dialog allows the user to directly alter the protected fingerprint</li>
+			<li>replace the dropdown selection options for both "Choose the languages used to display menus, messages, and notifications" and "Set Alternatives" with the list of bundled languages and remove the "search" feature for adding more remotely</li>
+			<li>remove "Use your operating system settings [for your OS locale] to format dates, times, numbers, and measurements" as this preference is ignored in code (reduce user confusion)</li>
+			<li>add an option for the choice to "Request English versions of web pages for enhanced privacy"</li>
+		</ul>
+	</div>
+	<p>TEST</p>
+	<p>Tor Browser can only control what happens in their "crowd". If we cover and test all possible methods and sources, we know the crowd is protected <i>as designed</i>. Ideally this should include built-in test code, specialized test pages and sites, and automated testing for builds - not just to ensure the resistance is working, but to catch regressions and adversarial results.</p>
+	<div class="inset example">
+		<h5>Example (test): <code>device orientation</code></h5>
+		<ul>
+			<li>All users are expected to be one of two results (based on screen spoofing which is based on inner) with the correct matching angle per platform (equivalency)
+				<ul>
+					<li>Using our earlier desktop estimates
+						<ul>
+							<li>probability: <code>95.05%</code> landscape*, <code>4.95%</code> portrait*</li>
+							<li>information bits: <code>0.07324</code>, <code>4.336</code></li>
+							<li>entropy: <code>0.2216</code> (reduced from <code>0.3122</code>)</li>
+						</ul>
+					</li>
+					<li>Whilst the overall metric entropy wasn't greatly reduced, it all counts. More importantly, we have <u>reduced buckets</u> and conversely protected users with unusual orientations</li>
+				</ul>
+			</li>
+			<li>Tests were built into the patch and manually verified with all possible device orientations on each platform</li>
+			<li>In the future it is expected that Tor Browser screen spoofing in desktop will always return landscape dimensions (still based on inner), meaning device orientation entropy will be <code>0</code> (within the Tor Browser crowd)</li>
+		</ul>
+	</div>
+	<br>
 </div>
 
 <!--part4-->
 <div>
 	<hr>
 	<h3><a name="part4"></a>PART 4: TESTING</h3>
+	<p>Tests provide data, and collective data can be analysed to help formulate fingerprint resistance methods, confirm protections are as expected and haven't regressed, and to find metrics that require some or more protections.</p>
+	<div class="inset quote">
+		&ldquo;<i>... and know yourself</i>&rdquo; - Sun Tzu
+		<br><br>
+		&ldquo;<i>Knowledge is power.</i>&rdquo; - thorin
+	</div>
+	<p>Data can also come from telemetry if available (e.g. Tor Browser has none). Note that telemetry data is clean, non-tainted data since it can bypass fingerprint protections and extension tampering. This part focuses on tests and test data.</p>
 </div>
 
 <!--test basics-->
 <div>
 	<hr class="dashed">
 	<h4><a name="test"></a>Test Basics</h4>
+	<p>Fingerprint resistance can only be achieved in a crowd, e.g. Tor Browser. Therefore, to test values, it only makes sense to test within the crowd - e.g. Tor Browser users. Any other browser data is irrelevant. Similarly, any analysis of data collected should be restricted to crowd users. Non-crowd data just creates unwanted noise - but can of course be useful to help determine benign values and to see what other browsers do - e.g. we can use ask Firefox for per-platform summary-data on common screen sizes or processor counts.</p>
+	<div class="inset highlightleft">
+		<h5>Crowd: (from "Resistance Basics")</h5>
+		<p>... a set of users being protected by an overall fingerprint resistance strategy [such as] Tor Browser [or] Mullvad Browser ...</p>
+	</div>
+	<p>When resistance is added for a metric, testing should have been created (see "Tor Project Methodology" above). These tests should be <u>robust</u>, i.e. all <u>methods and sources</u> for the crowd (e.g. Tor Browser would check <code>EXSLT</code> for date/time protections since it is based on Gecko).</p>
+	<div class="inset highlightleft">
+		<h5>methods and sources: (from "Resistance Methods")</h5>
+		<ul>
+			<li><u>methods</u>: all the ways to determine or infer the value</li>
+			<li><u>sources</u>: all origins: document, iframe, workers, service workers, first party, third party etc</li>
+		</ul>
+	</div>
+	<p>Collectively these tests, and additional ones covering metrics not yet fully protected or understood, can be used to create an overall fingerprint test optimized for the crowd in question.</p>
+</div>
+
+<!--test data-->
+<div>
+	<hr class="dashed">
+	<h4><a name="data"></a>Test Data</h4>
+	<p>In testing there are two <u>dataset</u> outcomes that are useful</p>
+	<ul>
+		<li><u>buckets</u> (i.e values)</li>
+		<li><u>entropy</u> (i.e uniformity)</li>
+	</ul>
+	<p>A dataset can be for a single metric, a subset of metrics, an overall fingerprint, or any data "slicing and dicing" (multidimensional filtering) that is meaningful. A dataset is not guaranteed to get all possible buckets as it is a random sample. The larger the dataset, the better the chance more values, or the maximum buckets, are detected.</p>
+	<p>BUCKETS (values)</p>
+	<ul>
+		<li>each value only needs to be recorded <u>once</u></li>
+		<li>for protected metrics, any value outside expected results indicates protection is not working as expected</li>
+		<li>different values can indicate where protection may be lacking</li>
+	</ul>
+	<div class="inset example">
+		<h5>Examples: (Tor Browser buckets)</h5>
+		<ul>
+			<li><u>languages + locale</u>
+				<ul>
+					<li><code>navigator.languages</code> (plural) is tightly controlled which in turn tightly controls <code>locale</code>.</li>
+					<li>Tor Browser currently has 41 language options</li>
+					<li>therefore there should only be 41 possible languages + locale combined values</li>
+					<li>any combined value that isn't one of the 41 expected values would indicate a protection failure</li>
+				</ul>
+			</li>
+			<li><u>geolocation's default permission</u>
+				<ul>
+					<li>the default (from Firefox) is "prompt"</li>
+					<li>the default is <u>not</u> currently limited by Tor Browser's fingerprint resistance.</li>
+					<li>users can change the permission in the settings, even though it cannot be used (geolocation is currently disabled)</li>
+					<li>a value or bucket for "deny" or "granted" would show this metric needs protection</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+	<p>ENTROPY (the number of buckets and their uniformity)</p>
+	<p>While buckets/values can tell us <u>where</u> there are differences of interest, only entropy (from large, real-world, and untainted, crowd-datasets) can tell us <u>how bad</u> it is.</p>
+	<ul>
+		<li><u>occurences</u> matter as the number of each value determines the probabilities used to caculate entropy</li>
+		<li>it is therefore important to not taint datasets with repeat-user data
+			<ul><li>e.g. in studies and surveys, state tracking (e.g. an IP address and/or a cookie) is commonly utilized to help mitigate this, but becomes problematic due to sanitizing and IP address protections</li></ul>
+		</li>
+		<li>datasets need to be real-world
+			<ul><li>i.e. representative of reality and not unduely influenced by specific demographics or groups such as privacy and fingerprinting enthusiasts</li></ul>
+		</li>
+		<li>datasets need to be large enough to make inferences about the crowd with <u>confidence</u></li>
+		<li>see "Test Sites" below for bad examples</li>
+	</ul>
+	<p>In other words, not only is <u>what</u> is tested, <u>how it's tested</u>, and <u>how robust</u> it's tested important for quality - i.e all the things that make a good test suite (e.g. acccurate, relevant, comprehensive, robust...) - but also <u>how it's collected</u> and <u>how much</u> is collected is also critical (i.e fit the needs of the survey).</p>
+</div>
+
+<!--no data-->
+<div>
+	<hr class="dashed">
+	<h4><a name="nodata"></a>No Data</h4>
+	<p>What if you had no data? How can a resistance strategy, either overall or for an individual metric, know if it's resistance is working without large scale datasets of their users and without any telemetry? It depends on the metric and resistance method, but for some the effectiveness can be known or estimated with <i>some certainty</i>. Here are some Tor Browser examples.</p>
+	<p>If it is "known" there is only one bucket, then the entropy in the crowd "is" zero (assuming no leaks or bugs and the tests are robust), and the protection cannot resist more</p>
+	<div class="inset example">
+		<h5>Example (zero entropy): <code>timezoneName</code></h5>
+		<ul>
+			<li>everyone is timezone <code>Atlantic/Reykjavik</code></li>
+			<li>tested for, hardcoded, can't be overriden by prefs or the system, is "restricted" meaning it's always "truthful" everywhere including deterministic results in <code>Date</code> and<code>Intl</code> etc</li>
+		</ul>
+	</div>
+	<p>If it is "known" that the buckets (plural) are at the minimum possible (equivalency), then the protection cannot resist more, and entropy can only sometimes be estimated with any degree of certainty</p>
+	<div class="inset example">
+		<h5>Example (equivalency): <code>userAgent</code></h5>
+		<ul>
+			<li>always one of four possible results based on equivalency of platform: i.e Windows, Mac, Linux or Android</li>
+			<li>tested for, hardcoded, can't be overriden by prefs etc</li>
+			<li>entropy can only be <i>estimated</i> e.g. based on downloads per platform</li>
+		</ul>
+	</div>
+	<p>If it is "hopeful" that the buckets are at the minimum possible</p>
+	<div class="inset example">
+		<h5>Example (hopeful): <code>font enumeration</code></h5>
+		<ul>
+			<li>on desktop, most or all fonts are bundled - Windows and Mac also allow some expected system fonts</li>
+			<li>all users <i>should</i> have the same fonts per platform</li>
+			<li>but there are protection gaps as the browser cannot control the system's fonts or users removing fonts</li>
+		</ul>
+	</div>
+	<p>If there is a lack of knowledge</p>
+	<div class="inset example">
+		<h5>Example (unknown): <code>font measurements</code></h5>
+		<ul>
+			<li>each language has it's own default fonts, style, sizes, and direction etc</li>
+			<li>devicePixelRatio (system scaling) affects sizes</li>
+			<li>zoom affects sizes</li>
+			<li>font settings affect sizes: such as antialiasing, clearType or fontSmoothing, etc</li>
+			<li>users can change font settings such as default sizes and font used</li>
+			<li>users can change trhe default font zoom</li>
+			<li>the unicode characters used in the font string being measured can fallback to different fonts based on more preferences</li>
+			<li>there is so much uncertainty and a lack of information, that tests and datasets are required to move forward</li>
+		</ul>
+	</div>
+	<p>The only way to know with high confidence or certainty how effective resistance protections are is with large real-world datasets of crowd users, based on robust and sophisticated testing - to check protections are working, to indicate where differences exist for analysis and improvements, and with surveys to check entropy.</p>
 </div>
 
 <!--test sites-->
 <div>
 	<hr class="dashed">
 	<h4><a name="sites"></a>Test Sites</h4>
+
+	<p>To reiterate from above</p>
+	<ul>
+		<li>Not only is <u>what</u> is tested, <u>how it's tested</u>, and <u>how robust</u> it's tested important for quality ... but also <u>how it's collected</u> and <u>how much</u> is collected is also critical</li>
+		<li>In testing there are two dataset outcomes that are useful: <u>buckets</u> (values) and <u>entropy</u> (uniformity).</li>
+	</ul>
+	<div class="inset highlight">Test sites are an example of what <b>NOT</b> to use.</div>
+	<p>BUCKETS (values)</p>
+	<ul>
+		<li>tests are not robust: therefore they do not show potential leaks or entropy</li>
+		<li>tests are not comprehensive; i.e not measuring enough metrics</li>
+		<li>tests may have bugs: e.g not stable, not reproducible, not accurate</li>
+		<li>tests are not universal between sites (so you can't compare)</li>
+	</ul>
+	<p>For example, one site may report canvas as randomized, another site will report a hash (and claim it's unique). Who do you believe? What did they test (offscreenCanvas, toDataURL, and a hundred other parameters)?</p>
+	<div class="inset red">IF YOU DON'T KNOW WHAT IS TESTED,<br> HOW IT'S TESTED,<br> OR HOW ROBUST IT'S TESTED,<br> THEN YOU CAN'T TRUST ANY VALUES</div>
+	<p>ENTROPY (uniformity)</p>
+	<ul>
+		<li>if tests have bugs, are not comprehensive, or are not robust then the entropy is meaningless</li>
+		<li><u>the entropy is meaningless anyway</u> as the data is tainted
+			<ul>
+				<li>it is not real-world</li>
+				<li>it is not one-result-per-user</li>
+				<li>the datasets are too small</li>
+			</ul>
+		</li>
+	</ul>
+	<div class="inset red">ANY PROBABILITIES OR ENTROPY<br> FROM TEST SITES ARE COMPLETE NONSENSE</div>
+	<p>Let's look at some examples: at the time of writing</p>
+	<div class="inset example">
+		<ul>
+			<li>coveryourtracks
+				<ul>
+					<li><code>timeZoneName</code>: Atlantic/Reykjavik = 1 in 6.17 (16.2%)</li>
+					<li><code>language</code>: en-US = 1 in 1.79 (56%)</li>
+				</ul>
+			</li>
+			<li>amiunique (last 90 days)
+				<ul><li><code>Firefox</code>: 29.4%</li></ul>
+			</li>
+		</ul>
+	</div>
+
+</div>
+
+<!--future-->
+<div>
+	<hr class="dashed">
+	<h4><a name="future"></a>The Future</h4>
+	<p>I will discuss this in more depth in a future article, but in general, fingerprint resistance overall has been the result of a decade-long conflicting and contradictory piecemeal mess of acculumated knowledge and application - and quite frankly, <i>everyone</i> can do better!.</p>
+
+[finish this off, coupoel more sentences]
+
+<!--
+	<p>
+different strategies and techniques
+hostory is literred with misunderstood issues, poor decisions and untold amounts of breakage and blockage for users
+relying on researchers
+occassional proactive input during new features/APIs
+
+a comprehensive 
+	</p>
+-->
 </div>
 
 <hr><br>the end<br>
