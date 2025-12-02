@@ -1385,7 +1385,7 @@
 	<p>What if you had no data? How can a resistance strategy, either overall or for an individual metric, know if it's resistance is working without large scale datasets of their users and without any telemetry? It depends on the metric and resistance method, but for some the effectiveness can be known or estimated with <i>some certainty</i>. Here are some Tor Browser examples.</p>
 	<p>If it is "known" there is only one bucket, then the entropy in the crowd "is" zero (assuming no leaks or bugs and the tests are robust), and the protection cannot resist more</p>
 	<div class="inset example">
-		<h5>Example (zero entropy): <code>timezoneName</code></h5>
+		<h5>Example (zero entropy): <code>timeZoneName</code></h5>
 		<ul>
 			<li>everyone is timezone <code>Atlantic/Reykjavik</code></li>
 			<li>tested for, hardcoded, can't be overriden by prefs or the system, is "restricted" meaning it's always "truthful" everywhere including deterministic results in <code>Date</code> and<code>Intl</code> etc</li>
@@ -1460,44 +1460,86 @@
 	<div class="inset red">ANY PROBABILITIES OR ENTROPY<br> FROM TEST SITES ARE COMPLETE NONSENSE</div>
 	<p>Let's look at some examples: at the time of writing</p>
 	<div class="inset example">
+		<h5>Example: (test site)</h5>
 		<ul>
 			<li>coveryourtracks
 				<ul>
-					<li><code>timeZoneName</code>: Atlantic/Reykjavik = 1 in 6.17 (16.2%)</li>
-					<li><code>language</code>: en-US = 1 in 1.79 (56%)</li>
+					<li><code>timeZoneName</code>: Atlantic/Reykjavik = 1 in 6.17 (<u>16.2%</u>)</li>
+					<li><code>language</code>: en-US = 1 in 1.79 (<u>56%</u>)</li>
 				</ul>
 			</li>
 			<li>amiunique (last 90 days)
-				<ul><li><code>Firefox</code>: 29.4%</li></ul>
+				<ul><li><code>Firefox</code>: <u>29.4%</u></li></ul>
 			</li>
 		</ul>
 	</div>
+	<p>Now lets look at reality. Note that whilst population and/or demographics and/or other methods for estimations are not pefect comparisions to internet traffic, in these examples it is sufficient to prove the point.</p>
 
+	<div class="inset example">
+		<h5>Example: (reality)</h5>
+		<ul>
+			<li><code>timeZoneName</code>
+				<ul>
+					<li>world population 2025: ~8.2 billion</li>
+					<li>Icelandic (population ~400 thousand), Tor Browser (~5 million) and RFP users (?) would be lucky to number 6 million, but let's be generous and call it 8.2 million</li>
+					<li>1 in 1000 (<u>0.1%</u>)</li>
+				</ul>
+			</li>
+			<li><code>language</code>
+				<ul><li>en-US: approx 1.5 billion (<u>18.3%</u>) people speak English either natively or as a second language, and not all those will use English by default, let alone English (United States)</li></ul>
+			</li>
+			<li><code>Firefox</code>
+				<ul><li>April 2025: 2.55% market share <sup><a href="https://gs.statcounter.com/browser-market-share" target="_blank">gs.statcounter.com</a>)</sup>, but let's be generous and call it <u>2.94%</u></li></ul>
+			</li>
+		</ul>
+	</div>
+	<p>Now lets compare the test site to reality. Consider by just how much each metric's probability (and entropy) are skewed, and be aware that each metric can affect many other metrics</p>
+
+	<div class="inset example">
+		<h5>Example: (test site vs reality)</h5>
+		<ul>
+			<li><code>language</code>: 56% (0.84) vs 18% (2.48)
+				<ul>
+					<li>test site probability is at least <u><b>3x</b></u> higher</li>
+					<li>entropy difference 1.64</li>
+					<li>note: 18% is being extremely generous</li>
+				</ul>
+			</li>
+			<li><code>Firefox</code>: 29.4% (1.77) vs 2.94% (5.09)
+				<ul>
+					<li>test site probability is approx <u><b>10x</b></u> higher</li>
+					<li>entropy difference 3.32</li>
+				</ul>
+			</li>
+			<li><code>timeZoneName</code>: 16.2% (2.63) vs 0.1% (9.97)
+				<ul>
+					<li>test site probability is over <u><b>160x</b></u> higher</li>
+					<li>entropy difference 7.34</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+	<p>The <code>language</code> metric demonstrates how demographics are important and something so simple can <i>easily and inadvertently</i> start (call it <u><b>3x</b></u>) to taint datasets from reality - something surveys and studies need to address and/or acknowledge. Many test sites are also language-centric.</p>
+	<p><code>Firefox</code> is marketed and known as a privacy focused browser and has ties with Tor Browser and RFP - so it makes sense that this demographic is <i>a bit more interested</i> (call it <u><b>10x</b></u>) in testing than the average.</p>
+	<p>Now consider <code>timeZoneName</code> - outside of real world use, only Tor Browser, Mullvad Browser and Firefox's RFP use <code>Atlantic/Reykjavik</code> in any meaningful numbers. This set of users are <i>highly interested</i> (call it <u><b>600x</b></u>) in testing (and re-testing and tweaking and re-testing)</p>
+	<p>Now take into account that most metrics are <u>not independent</u> and they will skew and taint other metrics. For example: language choices affect default fonts and sizes as well as locale. Locale affects date and time formatting. RFP users will literally taint hundreds of other data points or metrics due to the wide resistance built into it. Firefox has thousands of differences to other engines.</p>
+	<p>Not only are these test site probabilities inaccurate, they cause high and very misleading entropy differences (<i>log<sub>2</sub></i>). Just testing with Firefox is underestimating entropy by approximately <code>3.32</code> bits which in turn affects metrics Firefox has major differences with. <code>timeZoneName</code> is a staggering <code>7.34</code> bits difference. Considering that <code>33</code> bits is supposedly the magical mark, just that one metric being off shows how futile test sites are for this task - it requires large scale, real-world, untainted surveys.</p>
+	<div class="inset red">ANY PROBABILITIES OR ENTROPY<br> FROM TEST SITES ARE COMPLETE NONSENSE</div>
+	<br>
 </div>
 
 <!--future-->
 <div>
 	<hr class="dashed">
 	<h4><a name="future"></a>The Future</h4>
-	<p>I will discuss this in more depth in a future article, but in general, fingerprint resistance overall has been the result of a decade-long conflicting and contradictory piecemeal mess of acculumated knowledge and application - and quite frankly, <i>everyone</i> can do better!.</p>
-
-[finish this off, coupoel more sentences]
-
-<!--
-	<p>
-different strategies and techniques
-hostory is literred with misunderstood issues, poor decisions and untold amounts of breakage and blockage for users
-relying on researchers
-occassional proactive input during new features/APIs
-
-a comprehensive 
-	</p>
--->
+	<p>I plan to write about this in more depth in a future article, but in general, fingerprint resistance overall has been the result of a decade-long haphazard, oft-times conflicting and contradictory, piecemeal mess of acculumated knowledge and application - and quite frankly, <i>everyone</i> can do better!.</p>
+	<p>This is not an indictment of any previous work, but a reflection that we have gaps but also that over that time we have experienced and learned and should now collectively be a lot smarter. I know we have gaps with built-in RFP tests - not a criticism, that's just the result of resources and piecemeal efforts over years long work. I know we have knowledge gaps. Some consensus would be also nice - imagine a Fingerprint Resistance API web standard that all engines adhered to.</p>
+	<div class="inset quote">&ldquo;<i>Knowledge is power.</i>&rdquo; - thorin</div>
+	<p>Moving forward, we need better tests suites. If all metric protections are deterministic (and in my opinion they should be), imagine a collaborative test suite all engines (and the public) could use - just like a Speedometer or a JetStream or an Interop. And for those without telemetry it could ultimately be used for surveys to check actual progress.</p>
+	<p>We need to be <b>more proactive</b> (I've been working on this problem for a few years) and hopefully get <b>browser-space buy-in</b> (I attended the 2025 Web Engine Hackfest and there was lots of interest over the fingeprinting space). It's not for want but a lack of time and resources. But it also seems to me that where it matters, there are discussions starting to mention and turn to these problems, and I hope to be part of it.</p>
 </div>
 
 <hr><br>the end<br>
-
-<!-- +  -->
 
 </main>
 </body>
